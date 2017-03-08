@@ -27,7 +27,7 @@ def cmd_exists(cmd):
 # command line arg parsing
 def arg_parse(cmdline):
     # valid options
-    o = {'--nobuild':'-nb', '--run':'-r', '--build':'-b', '--power':'-pw', '--clean':'-l', '--distclean':'-d', '--help':'-h', '--heterogen':'-ht'}
+    o = {'--nobuild':'-nb', '--run':'-r', '--build':'-b', '--power':'-pw', '--clean':'-l', '--distclean':'-d', '--help':'-h', '--heterogen':'-ht', '--failure-mode':'-pb'}
     # valid args
     a = {'--processor':'-p', '--numcores':'-n', '--software':'-s', '--interconnection':'-i', '--condor':'-c', '--noc_x':'-x', '--noc_y':'-y', '--gen_noc':'-gn'}
     arg_values = []
@@ -85,7 +85,8 @@ def arg_parse(cmdline):
             sys.exit(1)
         if ('-pw' in opts) and (('-r' in opts) and ('-nb' in opts)):
             help()
-            sys.exit(1)               
+            sys.exit(1) 
+
         if ('-c' in args.keys()) and (('-r' in opts) and ('-nb' in opts)):
             help()
             sys.exit(1)
@@ -200,8 +201,7 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
         else:
             sys.exit('\nERROR: Cross-compiler ' + cross + ' is not in the PATH\n')
    
-    # for older compilers
-    #make = make + "\nexport CROSS := " + proc + "-elf-gcc\n"
+   
     if power:
         pw_flag = " -pw"
         make = make + "export POWER_SIM_FLAG := -DPOWER_SIM=\\\"\\\"\n"
@@ -209,7 +209,14 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
         pw_flag = ""
         make = make + "export POWER_SIM_FLAG := \n" 
 
-    make = make + "export ACSIM_FLAGS := -abi -ndc -pl" + pw_flag + "\n"; 
+    if failure_mode:
+        fm_flag = " -pb"
+    else: 
+        fm_flag = ""
+
+    make = make + "export ACSIM_FLAGS := -abi -ndc " + pw_flag + fm_flag+"\n"; 
+    
+
     
     if intercon == 'noc.at':
         make = make + "export WAIT_TRANSPORT_FLAG := -DWAIT_TRANSPORT\nexport TRANSPORT := nonblock\n"
@@ -219,10 +226,15 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
     make = make + "export RUNDIRNAME := " + plat_rundir + "\n"
     if proc != 'arm':
         make = make + "export ENDIANESS := -DAC_GUEST_BIG_ENDIAN\n"
-    else: 
+    else:
         make = make + "export ENDIANESS := \n"
+    if failure_mode == True:
+        make = make + "export FAILURE_MODE_FLAG := -DFAILURE_MODE\n"
+    else:
+        make = make + "export FAILURE_MODE_FLAG := \n"
     make = make + "ifeq ($(PROCESSOR),arm)\nexport CFLAGS_AUX := -DPROCARM\nendif\n"
     make = make + "ifeq ($(PROCESSOR),mips)\nexport CFLAGS_AUX := -DPROCMIPS\nendif\n"
+    make = make + "ifeq ($(PROCESSOR),mips32r2)\nexport CFLAGS_AUX := -DPROCMIPS32r2\nendif\n"
     make = make + "ifeq ($(PROCESSOR),sparc)\nexport CFLAGS_AUX := -DPROCSPARC\nendif\n"
     make = make + "ifeq ($(PROCESSOR),powerpc)\nexport CFLAGS_AUX := -DPROCPOWERPC\nendif\n"
     make = make + "include Makefile.rules\n"
@@ -244,7 +256,7 @@ def help():
     print "---------------------"
     print "-x|--noc_x: to choose noc x"
     print "-y|--noc_y: to choose noc y"
-    print "-p|--processor: to choose processor models (powerpc, mips, sparc, or arm)"
+    print "-p|--processor: to choose processor models (powerpc, mips, mips32r2 sparc, or arm)"
     print "-n|--numcores: to choose the number of cores (1,2,4,8,16,32, or 64)"
     print "-s|--software: to choose the application"
     print "-i|--interconnection: to choose the interconnection device (router.lt, noc.lt, noc.at)"
@@ -254,6 +266,7 @@ def help():
     print "-pw|--power: to enable power consumption for SPARC and MIPS platforms"
     print "-c|--condor: to enable execution on HTCondor"
     print "-ht|--heterogen: to enable a heterogeneous platform"
+    print "-pb|--post-behavior: to enable a failure mode"
     print "---------------------"
     print "Usage:"
     print "       ./MPSoCBench -b -p=<processor> -n=<n_cores> -s=<software> -i=<device>"
@@ -263,6 +276,10 @@ def help():
     print "       ./MPSoCBench -b -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pw"
     print "       ./MPSoCBench -r -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pw"
     print "       ./MPSoCBench -r -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pw -nb"
+    print ""
+    print "       ./MPSoCBench -b -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pb"
+    print "       ./MPSoCBench -r -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pb"
+    print "       ./MPSoCBench -r -p=<processor> -n=<n_cores> -s=<software> -i=<device> -pb -nb"
     print ""
     print "       ./MPSoCBench -b -p=<processor> -n=<n_cores> -s=<software> -i=<device> -c=<queue>"
     print "       ./MPSoCBench -r -p=<processor> -n=<n_cores> -s=<software> -i=<device> -c=<queue>"
@@ -319,10 +336,16 @@ def build(tracker, power, condor):
                         if valid_platform[k][j]:
                             os.system("rm Makefile")
                             # creates general Makefile
+                            plat_rundir = i + "." + l     
+                            if failure_mode:
+                                plat_rundir = plat_rundir + ".fm"
+
                             if power:
-                                plat_rundir = i + "." + l + ".pw." + j + "." + k
-                            else:
-                                plat_rundir = i + "." + l + "." + j + "." + k
+                                #plat_rundir = i + "." + l + ".pw." + j + "." + k
+                                plat_rundir = plat_rundir + ".pw" 
+                            
+                            plat_rundir = plat_rundir + "." + j + "." + k
+
                             f = open("Makefile", "w")
                             if (i == 'arm' or i == 'powerpc') and power:
                                 print "WARNING! The selected processor does not support PowerSC!"
@@ -332,7 +355,7 @@ def build(tracker, power, condor):
                                 f.write(makefile(i, j, k, power, l, plat_rundir))
                             f.close()
                             # makes the platform
-                            os.system("make clean distclean all")
+                            os.system("make distclean all")
                             path = "rundir/" + plat_rundir
                             print "Creating rundir for " + path[7:] + "..."
                             # creates rundir for each platform
@@ -361,13 +384,19 @@ def run(tracker, nobuild, power, condor):
                 for k in tracker[2]:
                     # interconnections
                     for l in tracker[3]:
+                        rundir_path = "rundir/" + i + "." + l 
                         if power:
-                            rundir_path = "rundir/" + i + "." + l + ".pw." + j + "." + k
-                        else:
-                            rundir_path = "rundir/" + i + "." + l + "." + j + "." + k
+                            rundir_path = rundir_path + ".pw" 
                         if i == 'arm' or i == 'powerpc' and power:
                             #print "WARNING! The selected processor does not support PowerSC!"
-                            rundir_path = "rundir/" + i + "." + l + "." + j + "." + k
+                            rundir_path = "rundir/" + i + "." + l 
+
+                        if failure_mode: 
+                            rundir_path = rundir_path + ".fm"
+
+                        rundir_path = rundir_path + "." + j + "." + k
+
+                        
                         # tests if rundir exists
                         if not os.path.isdir(rundir_path):
                             if not nobuild:
@@ -468,7 +497,7 @@ def heterogen(prep, nobuild, nproc, intercon):
 # way around.”
 # —Eric Raymond, The Cathedral and the Bazaar, chapter 5
 
-procs = ['arm', 'mips', 'powerpc', 'sparc']
+procs = ['arm', 'mips', 'mips32r2','powerpc', 'sparc']
 nprocs = ['1', '2', '4', '8', '16', '32', '64']
 sws = ['basicmath', 'dijkstra', 'fft', 'lu', 'ocean', 'sha', 
        'stringsearch', 'susancorners', 'susanedges', 'susansmoothing',
@@ -520,6 +549,8 @@ prep = False
 nobuild = False
 # controlled by -pw/--power
 power = False
+# controlled by -pb/--post-behavior
+failure_mode = False
 # controlled by -c/--condor
 condor = 0
 # controlled by --heterogen, True if --heterogen/ht
@@ -532,6 +563,8 @@ if '-nb' in opts:
     nobuild = True
 if '-pw' in opts: 
     power = True
+if '-pb' in opts:
+    failure_mode = True    
 if '-r' in opts:
     prep = False
 if '-b' in opts:
