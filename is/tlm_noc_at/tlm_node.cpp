@@ -181,11 +181,6 @@ void tlm_node::thread_node() {
         printf("\nTHREAD NODE--> Node %d,%d", getX(), getY());
       removeFromBuffer(payload, phase, time_info);
 
-      ac_payload_extension *teste_ex;
-      payload.get_extension(teste_ex);
-      printf("\nrule do pacote em thread_node = %d", teste_ex->getRule());
-
-
       tlm_payload_extension *ex;
       payload.get_extension(ex);
 
@@ -433,10 +428,7 @@ void tlm_node::removeFromBuffer(ac_tlm2_payload &p, tlm::tlm_phase &phase,
 
     p.deep_copy_from(beginListPackage->payload);
 
-    ac_payload_extension *teste_ex;
-    p.get_extension(teste_ex);
-    printf("\nrule do pacote em removeFromBuffer do node apos copia profunda= %d", teste_ex->getRule());
-
+    
 
 
     t = beginListPackage->time;
@@ -546,12 +538,7 @@ packageType::packageType(ac_tlm2_payload &p, tlm::tlm_phase &ph,
 
   payload.deep_copy_from(p);
 
-  ac_payload_extension *teste_ex;
-  payload.get_extension(teste_ex);
-  printf("\nrule do pacote em packageType do node apos copia profunda= %d", teste_ex->getRule());
-
-
-
+  
   time = t;
   phase = ph;
   next = NULL;

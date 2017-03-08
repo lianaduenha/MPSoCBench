@@ -27,7 +27,7 @@ def cmd_exists(cmd):
 # command line arg parsing
 def arg_parse(cmdline):
     # valid options
-    o = {'--nobuild':'-nb', '--run':'-r', '--build':'-b', '--power':'-pw', '--clean':'-l', '--distclean':'-d', '--help':'-h', '--heterogen':'-ht', '--failure-mode':'-pb'}
+    o = {'--nobuild':'-nb', '--run':'-r', '--build':'-b', '--power':'-pw', '--clean':'-l', '--distclean':'-d', '--help':'-h', '--heterogen':'-ht', '--post-behavior':'-pb'}
     # valid args
     a = {'--processor':'-p', '--numcores':'-n', '--software':'-s', '--interconnection':'-i', '--condor':'-c', '--noc_x':'-x', '--noc_y':'-y', '--gen_noc':'-gn'}
     arg_values = []
@@ -187,21 +187,23 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
             "\nexport PLATFORM := platform." + intercon + "\n"
    
     
-
+    #cross compilers    
     if proc=='arm':
         cross = proc + "-newlib-eabi-gcc"
-        if cmd_exists( cross ):
-            make = make + "export CROSS := " + cross + "\n"
-        else:
-            sys.exit('\nERROR: Cross-compiler ' + cross + ' is not in the PATH\n')
+
     else:
-        cross = proc + "-newlib-elf-gcc"
-        if cmd_exists( cross ):
-            make = make + "export CROSS := " + proc + "-newlib-elf-gcc\n"
+        if proc=='mips32r2':
+            cross = mips + "-newlib-elf-gcc"
         else:
-            sys.exit('\nERROR: Cross-compiler ' + cross + ' is not in the PATH\n')
-   
-   
+            cross = proc + "-newlib-elf-gcc"
+
+
+    if cmd_exists( cross ):
+        make = make + "export CROSS := " + cross + "\n"
+    else:
+        sys.exit('\nERROR: Cross-compiler ' + cross + ' is not in the PATH\n')
+       
+    #power
     if power:
         pw_flag = " -pw"
         make = make + "export POWER_SIM_FLAG := -DPOWER_SIM=\\\"\\\"\n"
@@ -209,12 +211,13 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
         pw_flag = ""
         make = make + "export POWER_SIM_FLAG := \n" 
 
-    if failure_mode:
-        fm_flag = " -pb"
+    #post-behavior
+    if post_behavior:
+        pb_flag = " -pb"
     else: 
-        fm_flag = ""
+        pb_flag = ""
 
-    make = make + "export ACSIM_FLAGS := -abi -ndc " + pw_flag + fm_flag+"\n"; 
+    make = make + "export ACSIM_FLAGS := -abi -ndc " + pw_flag + pb_flag+"\n"; 
     
 
     
@@ -228,7 +231,7 @@ def makefile(proc, nproc, sw, power, intercon, plat_rundir):
         make = make + "export ENDIANESS := -DAC_GUEST_BIG_ENDIAN\n"
     else:
         make = make + "export ENDIANESS := \n"
-    if failure_mode == True:
+    if post_behavior == True:
         make = make + "export FAILURE_MODE_FLAG := -DFAILURE_MODE\n"
     else:
         make = make + "export FAILURE_MODE_FLAG := \n"
@@ -337,8 +340,8 @@ def build(tracker, power, condor):
                             os.system("rm Makefile")
                             # creates general Makefile
                             plat_rundir = i + "." + l     
-                            if failure_mode:
-                                plat_rundir = plat_rundir + ".fm"
+                            if post_behavior:
+                                plat_rundir = plat_rundir + ".pb"
 
                             if power:
                                 #plat_rundir = i + "." + l + ".pw." + j + "." + k
@@ -391,8 +394,8 @@ def run(tracker, nobuild, power, condor):
                             #print "WARNING! The selected processor does not support PowerSC!"
                             rundir_path = "rundir/" + i + "." + l 
 
-                        if failure_mode: 
-                            rundir_path = rundir_path + ".fm"
+                        if post_behavior: 
+                            rundir_path = rundir_path + ".pb"
 
                         rundir_path = rundir_path + "." + j + "." + k
 
@@ -550,7 +553,7 @@ nobuild = False
 # controlled by -pw/--power
 power = False
 # controlled by -pb/--post-behavior
-failure_mode = False
+post_behavior = False
 # controlled by -c/--condor
 condor = 0
 # controlled by --heterogen, True if --heterogen/ht
@@ -564,7 +567,7 @@ if '-nb' in opts:
 if '-pw' in opts: 
     power = True
 if '-pb' in opts:
-    failure_mode = True    
+    post_behavior = True    
 if '-r' in opts:
     prep = False
 if '-b' in opts:
