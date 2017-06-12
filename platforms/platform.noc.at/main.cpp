@@ -42,7 +42,7 @@ const char *archc_options = "";
 #include "ac_utils.H"
 #include "ac_tlm_protocol.H"
 #include "tlm_intr_ctrl.h"
-#include "tlm_diretorio.h"
+//#include "tlm_diretorio.h"
 
 
 
@@ -53,7 +53,7 @@ using user::tlm_noc;
 using user::tlm_lock;
 using user::wrapper_master_slave_to_noc;
 using user::tlm_intr_ctrl;
-using user::tlm_diretorio;
+//using user::tlm_diretorio;
 
 #ifdef POWER_SIM
 using user::tlm_dfs;
@@ -126,7 +126,7 @@ int sc_main(int ac, char *av[]) {
   tlm_memory mem("mem", 0, MEM_SIZE - 1); // memory
   tlm_lock locker("lock");                // locker
   tlm_intr_ctrl intr_ctrl("intr_ctrl", N_WORKERS);
-  tlm_diretorio dir("dir");
+  //tlm_diretorio dir("dir");
 
 #ifdef POWER_SIM
   tlm_dfs dfs("dfs", N_WORKERS, processors); // dfs
@@ -158,8 +158,8 @@ int sc_main(int ac, char *av[]) {
   // NumberOfLines and numberOfColumns define the mesh topology
 
   int masters = N_WORKERS;
-  //int slaves = 3; // mem, lock, intr_ctrl
-  int slaves = 4; // mem, lock, intr_ctrl, dir
+  int slaves = 3; // mem, lock, intr_ctrl
+  //int slaves = 4; // mem, lock, intr_ctrl, dir
 
 #ifdef POWER_SIM
   slaves++; // dfs
@@ -225,16 +225,13 @@ int sc_main(int ac, char *av[]) {
   inc(line,column,r);
   
  
-  noc.wrapper[wrMS].LOCAL_init_socket.bind(dir.LOCAL_target_socket);
-  noc.masterEmptyNodes[emptyMasters].LOCAL_master_init_socket.bind(
-  noc.wrapper[wrMS].LOCAL_target_socket);
-  wrMS++;
-  emptyMasters++;
-  noc.tableOfRouts.newEntry(line, column); // the third argument is the last
-                                           // address of the range address of
-                                           // LOCK device
-
-  inc(line,column,r);
+  //noc.wrapper[wrMS].LOCAL_init_socket.bind(dir.LOCAL_target_socket);
+  //noc.masterEmptyNodes[emptyMasters].LOCAL_master_init_socket.bind(
+  //noc.wrapper[wrMS].LOCAL_target_socket);
+  //wrMS++;
+  //emptyMasters++;
+  //noc.tableOfRouts.newEntry(line, column); 
+  //inc(line,column,r);
 
 #ifdef POWER_SIM
   // DFS will be binded with NoC[1][0] in case of NoC 3x3, or NoC[0][4] in other
