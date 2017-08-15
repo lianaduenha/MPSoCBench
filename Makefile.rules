@@ -137,7 +137,10 @@ copy:
 	for sw in $(SW) ; do cd sw/$$sw ; \
         $(MAKE) copy; done
 #------------------------------------------------------
-
+run_het: het
+	cd $(ROOT)
+	cd platforms/$(PLATFORM); $(MAKE) run
+#------------------------------------------------------
 run: all
 	cd $(ROOT)
 	cd platforms/$(PLATFORM); $(MAKE) run

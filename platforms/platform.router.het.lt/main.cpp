@@ -67,9 +67,92 @@ bool first_load;
 
 int sc_main (int ac, char *av[])
 {
+
+  sc_report_handler::set_actions("/IEEE_Std_1666/deprecated", SC_DO_NOTHING);
+  // Checking the arguments
+  if (ac != 0) {
+    N_WORKERS = atoi(av[2]);
+
+    if (N_WORKERS > MAX_WORKERS) {
+      printf("\nThe amount of processors must be less than 64 %d.\n",
+             MAX_WORKERS);
+      exit(1);
+    }
+
+  } else {
+    printf("\nNo arguments for main.\n");
+    exit(1);
+  }
+
+
   mips300 *proc1 = new mips300("mips300");
   mips800 *proc2 = new mips800("mips800");
 
+  // Platform components
+  tlm_memory mem("mem", 0, MEM_SIZE - 1); // memory
+  tlm_router router("router");            // router
+  tlm_lock locker("locker");              // locker
+  tlm_intr_ctrl intr_ctrl("intr_ctrl", N_WORKERS);
+  //tlm_diretorio dir("dir");
+  #ifdef POWER_SIM
+  tlm_dfs dfs("dfs", N_WORKERS, processors); // dfs
+  #endif
+
+
+ // Binding ports
+  router.MEM_port(mem.target_export);
+  router.LOCK_port(locker.target_export);
+  router.INTR_CTRL_port(intr_ctrl.target_export);
+  //router.DIR_port(dir.target_export);
+
+  #ifdef POWER_SIM
+  router.DFS_port(dfs.target_export);
+  #endif
+
+  // Initializing Memports
+  
+    proc1->MEM(router.target_export);
+    (proc1->MEM_mport).setProcId(proc1->getId());
+  
+
+    proc2->MEM(router.target_export);
+    (proc2->MEM_mport).setProcId(proc2->getId());
+  
+
+    // Binding processors and interruption controller
+  
+    intr_ctrl.CPU_port[0](proc1->intr_port);
+    intr_ctrl.CPU_port[1](proc2->intr_port);
+
+
+    // Processor 0 starts simulatino in ON-mode while the other processors are in
+    // OFF-mode
+  for (int i = 1; i < N_WORKERS; i++) {
+    intr_ctrl.send(i, OFF);
+  }
+  intr_ctrl.send(0, ON); // turn on processor 0 (master)
+
+  // Preparing the arguments
+  char **arguments[N_WORKERS];
+  for (int i = 0; i < N_WORKERS; i++) {
+    arguments[i] = (char **)new char *[ac];
+  }
+
+  for (int i = 0; i < N_WORKERS; i++) {
+    for (int j = 0; j < ac; j++) {
+      arguments[i][j] = new char[strlen(av[j]) + 1];
+      arguments[i][j] = av[j];
+    }
+  }
+
+  /*// Load elf before start
+  first_load = true;
+  for (int i = 0; i < N_WORKERS; i++) {
+    load_elf(*processors[i], mem, arguments[i][1], 0x000000, MEM_SIZE);
+    first_load = false;
+  }*/
+
+    
 }
 
 

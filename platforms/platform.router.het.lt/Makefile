@@ -39,7 +39,7 @@ main.o:
 all: $(EXE)
 #"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---
 run: all
-	./$(EXE) $(SOFTWARE).$(PROCESSOR).x $(NUMPROCESSORS)        
+	./$(EXE) $(SOFTWARE).$(PROCESSOR_BASE).x $(NUMPROCESSORS)        
 #"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---"---
 clean:
 	rm -f $(OBJS) $(EXE) *~ *.o

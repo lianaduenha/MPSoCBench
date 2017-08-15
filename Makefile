@@ -2,7 +2,7 @@
 export SHELL := /bin/bash
 export PROCESSOR_BASE := mips
 export PROCESSOR := mips300 mips800
-export NUMPROCESSORS := 4
+export NUMPROCESSORS := 2
 export SOFTWARE := dijkstra
 export PLATFORM := platform.router.het.lt
 export CROSS := mips-newlib-elf-gcc
