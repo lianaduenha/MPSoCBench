@@ -1,6 +1,3 @@
-[submodule "processors/mips"]
-	path = processors/mips
-	url = https://github.com/ArchC/mips.git
 [submodule "processors/sparc"]
 	path = processors/sparc
 	url = https://github.com/ArchC/sparc.git
