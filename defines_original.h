@@ -100,22 +100,15 @@
 #define DELTA_T 0.00025     
 #define N_DELTA_T 50
 
-
-
-
-
-
 #ifdef PROCMIPS 
     #ifdef POWER_SIM
         #undef POWER_SIM
         #define POWER_SIM "../../processors/mips/powersc" 
     #endif
-      
+    #include "../../processors/mips/mips.H"   
     #define PROCESSOR_NAME mips
 	#define PROCESSOR_NAME_parms mips_parms
 #endif 
-
-/*
 
 #ifdef PROCSPARC
     #ifdef POWER_SIM
@@ -123,8 +116,8 @@
         #define POWER_SIM "../../processors/sparc/powersc" 
     #endif
     #include "../../processors/sparc/sparc.H"
-	//#define PROCESSOR_NAME sparc
-	//#define PROCESSOR_NAME_parms sparc_parms
+	#define PROCESSOR_NAME sparc
+	#define PROCESSOR_NAME_parms sparc_parms
 #endif 
 
 #ifdef PROCPOWERPC
@@ -146,8 +139,6 @@
 	#define PROCESSOR_NAME arm
 	#define PROCESSOR_NAME_parms arm_parms
 #endif 
-*/
-
 
 // NoC Hermes STATIC PARAMETERS - NOT IN USE IN THIS VERSION
 #define LOCAL_MEM_SIZE  67108864
