@@ -9,7 +9,7 @@ ifeq ($(PROCESSOR),arm)
 CFLAGS_AUX = -DPROCARM
 endif
 
-ifeq ($(PROCESSOR),mips)
+ifeq ($(PROCESSOR_BASE),mips)
 CFLAGS_AUX = -DPROCMIPS
 endif
 

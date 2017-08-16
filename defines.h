@@ -105,15 +105,26 @@
 
 
 
-#ifdef PROCMIPS 
+/*#ifdef PROCMIPS300 
     #ifdef POWER_SIM
         #undef POWER_SIM
         #define POWER_SIM "../../processors/mips/powersc" 
     #endif
-      
-    #define PROCESSOR_NAME mips
-	#define PROCESSOR_NAME_parms mips_parms
+    #include "../../processors/mips/mips300.H"
+    #define PROCESSOR_NAME300 mips300
+	#define PROCESSOR_NAME300_parms mips300_parms
 #endif 
+
+#ifdef PROCMIPS800 
+    #ifdef POWER_SIM
+        #undef POWER_SIM
+        #define POWER_SIM "../../processors/mips/powersc" 
+    #endif
+    #include "../../processors/mips/mips800.H"
+    #define PROCESSOR_NAME800 mips800
+    #define PROCESSOR_NAME800_parms mips800_parms
+#endif 
+*/
 
 /*
 

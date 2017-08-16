@@ -37,8 +37,21 @@ const char *archc_options = "";
 #include "tlm_dfs.h"
 #include "tlm_intr_ctrl.h"
 //#include "tlm_diretorio.h"
+
+#ifdef POWER_SIM
+  #undef POWER_SIM
+  #define POWER_SIM "../../processors/mips/powersc" 
+#endif
+
 #include "../../processors/mips/mips300.H"
+#define PROCESSOR_NAME300 mips300
+#define PROCESSOR_NAME300_parms mips300_parms
+
 #include "../../processors/mips/mips800.H"
+#define PROCESSOR_NAME800 mips800
+#define PROCESSOR_NAME800_parms mips800_parms
+
+
 
 using user::tlm_memory;
 using user::tlm_router;
@@ -50,6 +63,9 @@ using user::tlm_intr_ctrl;
 using user::tlm_dfs;
 #endif
 
+
+
+
 // Global variables
 int N_WORKERS;
 struct timeval startTime;
@@ -60,10 +76,13 @@ FILE *local_time_measures;
 
 bool first_load;
 // Functions
-//void report_start(char *, char *, char *);
-//void report_end();
+void report_start(char *, char *, char *);
+void report_end();
 //void load_elf(mips300 &, tlm_memory &, char *, unsigned int, unsigned int);
 //void load_elf(mips800 &, tlm_memory &, char *, unsigned int, unsigned int);
+void load_elf300(PROCESSOR_NAME300 &, tlm_memory &, char *, unsigned int, unsigned int);
+void load_elf800(PROCESSOR_NAME800 &, tlm_memory &, char *, unsigned int, unsigned int);
+
 
 int sc_main (int ac, char *av[])
 {
@@ -145,12 +164,84 @@ int sc_main (int ac, char *av[])
     }
   }
 
-  /*// Load elf before start
+
+  // Load elf before start
   first_load = true;
-  for (int i = 0; i < N_WORKERS; i++) {
-    load_elf(*processors[i], mem, arguments[i][1], 0x000000, MEM_SIZE);
-    first_load = false;
-  }*/
+  load_elf300(*proc1, mem, arguments[0][1], 0x000000, MEM_SIZE);
+  first_load = false;
+  load_elf800(*proc2, mem, arguments[1][1], 0x000000, MEM_SIZE);
+  first_load = false;
+
+  proc1->init();
+  proc2->init();
+
+
+  report_start(av[0], av[1], av[2]);
+
+  // Beggining of simulation
+
+  sc_start();
+
+  /*proc1->PrintStat();
+  proc1->FilePrintStat(global_time_measures);
+  proc1->FilePrintStat(local_time_measures);
+
+  proc2->PrintStat();
+  proc2->FilePrintStat(global_time_measures);
+  proc2->FilePrintStat(local_time_measures);
+
+
+  // Printing statistics
+#ifdef AC_STATS
+  
+  proc1->ac_sim_stats.time = sc_simulation_time();
+  proc1->ac_sim_stats.print();
+
+  proc2->ac_sim_stats.time = sc_simulation_time();
+  proc2->ac_sim_stats.print();
+ 
+#endif
+
+#ifdef POWER_SIM
+  
+    // Connect Power Information from ArchC with PowerSC
+    proc1->ps.powersc_connect();
+    proc1->IC.powersc_connect();
+    proc1->DC.powersc_connect();
+
+    proc2->ps.powersc_connect();
+    proc2->IC.powersc_connect();
+    proc2->DC.powersc_connect();
+  }
+  proc1->ps.report();
+#endif
+
+#ifdef POWER_SIM
+  double d = 0;
+
+  // Connect Power Information from ArchC with PowerSC
+  d += proc1->ps.getEnergyPerCore();
+  d += proc2->ps.getEnergyPerCore();
+  
+  printf("\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ", d * 0.000000001);
+  fprintf(local_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
+          d * 0.000000001);
+  fprintf(global_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
+          d * 0.000000001);
+#endif
+  
+// Checking the status
+  bool status = 0;
+  
+  status = status + proc1->ac_exit_status;
+  status = status + proc2->ac_exit_status;
+
+  delete proc1;
+  delete proc2;
+
+  fclose(local_time_measures);
+  fclose(global_time_measures);
+  return status;*/
 
     
 }
@@ -380,8 +471,8 @@ void report_end() {
 
 
 
-/*
-void load_elf(PROCESSOR_NAME &proc, tlm_memory &mem, char *filename,
+
+void load_elf800(PROCESSOR_NAME800 &proc, tlm_memory &mem, char *filename,
               unsigned int offset, unsigned int memsize) {
 
   Elf32_Ehdr ehdr;
@@ -467,11 +558,11 @@ void load_elf(PROCESSOR_NAME &proc, tlm_memory &mem, char *filename,
         if (first_load) {
           lseek(fd, p_offset, SEEK_SET);
           for (j = 0; j < p_filesz;
-               j += sizeof(PROCESSOR_NAME_parms::ac_word)) {
+               j += sizeof(PROCESSOR_NAME800_parms::ac_word)) {
             int tmp;
             ssize_t ret_value =
-                read(fd, &tmp, sizeof(PROCESSOR_NAME_parms::ac_word));
-            int d = convert_endian(sizeof(PROCESSOR_NAME_parms::ac_word), tmp,
+                read(fd, &tmp, sizeof(PROCESSOR_NAME800_parms::ac_word));
+            int d = convert_endian(sizeof(PROCESSOR_NAME800_parms::ac_word), tmp,
                                    proc.ac_mt_endian);
             mem.direct_write(&tmp, p_vaddr + j + offset);
           }
@@ -488,4 +579,111 @@ void load_elf(PROCESSOR_NAME &proc, tlm_memory &mem, char *filename,
 
   close(fd);
 }
-*/
+
+void load_elf300(PROCESSOR_NAME300 &proc, tlm_memory &mem, char *filename,
+              unsigned int offset, unsigned int memsize) {
+
+  Elf32_Ehdr ehdr;
+  Elf32_Shdr shdr;
+  Elf32_Phdr phdr;
+  int fd;
+  unsigned int i;
+  // unsigned int data_mem_size=(0x4FFFFF);
+  unsigned int data_mem_size = memsize;
+
+  if (!filename || ((fd = open(filename, 0)) == -1)) {
+    AC_ERROR("Openning application file '" << filename
+                                           << "': " << strerror(errno) << endl);
+    exit(EXIT_FAILURE);
+  }
+
+  // Test if it's an ELF file
+  if ((read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) || // read header
+      (strncmp((char *)ehdr.e_ident, ELFMAG, 4) != 0) || // test magic number
+      0) {
+    close(fd);
+    AC_ERROR("File '" << filename << "' is not an elf. : " << strerror(errno)
+                      << endl);
+    exit(EXIT_FAILURE);
+  }
+
+  // Set start address
+
+  proc.ac_start_addr = convert_endian(4, ehdr.e_entry, proc.ac_mt_endian);
+
+  if (proc.ac_start_addr > data_mem_size) {
+    printf("ac_start_addr: %d   data_mem_size: %d", proc.ac_start_addr,
+           data_mem_size);
+    AC_ERROR("the start address of the application is beyond model memory\n");
+    close(fd);
+    exit(EXIT_FAILURE);
+  }
+
+  if (convert_endian(2, ehdr.e_type, proc.ac_mt_endian) == ET_EXEC) {
+    // It is an ELF file
+    if (first_load)
+      AC_SAY("Reading ELF application file: " << filename << endl);
+
+    for (i = 0; i < convert_endian(2, ehdr.e_phnum, proc.ac_mt_endian); i++) {
+      // Get program headers and load segments
+      lseek(fd, convert_endian(4, ehdr.e_phoff, proc.ac_mt_endian) +
+                    convert_endian(2, ehdr.e_phentsize, proc.ac_mt_endian) * i,
+            SEEK_SET);
+      if (read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {
+        AC_ERROR("reading ELF program header\n");
+        close(fd);
+        exit(EXIT_FAILURE);
+      }
+
+      if (convert_endian(4, phdr.p_type, proc.ac_mt_endian) == PT_LOAD) {
+        Elf32_Word j;
+        Elf32_Addr p_vaddr = convert_endian(4, phdr.p_vaddr, proc.ac_mt_endian);
+        Elf32_Word p_memsz = convert_endian(4, phdr.p_memsz, proc.ac_mt_endian);
+        Elf32_Word p_filesz =
+            convert_endian(4, phdr.p_filesz, proc.ac_mt_endian);
+        Elf32_Off p_offset =
+            convert_endian(4, phdr.p_offset, proc.ac_mt_endian);
+
+        // printf("data_mem_size: %d  application size: %d", data_mem_size,
+        // p_vaddr+p_memsz);
+        // Error if segment greater then memory
+        if (data_mem_size < p_vaddr + p_memsz) {
+          printf("data_mem_size: %d  application size: %d", data_mem_size,
+                 p_vaddr + p_memsz);
+          AC_ERROR("not enough memory in ArchC model to load application.\n");
+          close(fd);
+          exit(EXIT_FAILURE);
+        }
+
+        // printf("ac_heap_ptr: %d", proc.ac_heap_ptr);
+        // Set heap to the end of the segment
+        if (proc.ac_heap_ptr < p_vaddr + p_memsz)
+          proc.ac_heap_ptr = p_vaddr + p_memsz;
+        if (!proc.dec_cache_size)
+          proc.dec_cache_size = proc.ac_heap_ptr;
+
+        // Load and correct endian
+        if (first_load) {
+          lseek(fd, p_offset, SEEK_SET);
+          for (j = 0; j < p_filesz;
+               j += sizeof(PROCESSOR_NAME300_parms::ac_word)) {
+            int tmp;
+            ssize_t ret_value =
+                read(fd, &tmp, sizeof(PROCESSOR_NAME300_parms::ac_word));
+            int d = convert_endian(sizeof(PROCESSOR_NAME300_parms::ac_word), tmp,
+                                   proc.ac_mt_endian);
+            mem.direct_write(&tmp, p_vaddr + j + offset);
+          }
+
+          int d = 0;
+          for (j = p_vaddr + p_filesz; j <= p_memsz - p_filesz; j++)
+            mem.direct_write(&d, p_vaddr + j);
+        } // if
+
+      } // if
+
+    } // for
+  } // if
+
+  close(fd);
+}

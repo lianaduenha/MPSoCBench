@@ -54,7 +54,7 @@ AC_ARCH(mips300){
   ac_wordsize 32;
   ac_fetchsize 32;
 
-  ac_frequency 300; //
+  ac_frequency 200; //
 
   ARCH_CTOR(mips300) {
     ac_isa("mips300_isa.ac");

@@ -13,16 +13,6 @@ export TRANSPORT := block
 export MEM_SIZE_DEFAULT := -DMEM_SIZE=536870912
 export RUNDIRNAME := mips.router.het.lt.4.dijkstra
 export ENDIANESS := -DAC_GUEST_BIG_ENDIAN
-ifeq ($(PROCESSOR_BASE),arm)
-export CFLAGS_AUX := -DPROCARM
-endif
-ifeq ($(PROCESSOR_BASE),mips)
-export CFLAGS_AUX := -DPROCMIPS
-endif
-ifeq ($(PROCESSOR_BASE),sparc)
-export CFLAGS_AUX := -DPROCSPARC
-endif
-ifeq ($(PROCESSOR_BASE),powerpc)
-export CFLAGS_AUX := -DPROCPOWERPC
-endif
+
+
 include Makefile.rules

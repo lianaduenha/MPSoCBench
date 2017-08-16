@@ -63,7 +63,7 @@ public:
     has_delayed_load = false; 
     start_up=1;
     id.write(globalId++);
-    set_proc_freq(300);
+    set_proc_freq(200);
   }
 
   void set_proc_freq(unsigned int proc_freq);
