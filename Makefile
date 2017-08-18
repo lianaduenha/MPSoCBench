@@ -11,7 +11,7 @@ export ACSIM_FLAGS := -abi -ndc
 export WAIT_TRANSPORT_FLAG := 
 export TRANSPORT := block
 export MEM_SIZE_DEFAULT := -DMEM_SIZE=536870912
-export RUNDIRNAME := mips.router.het.lt.4.dijkstra
+export RUNDIRNAME := mips.router.het.lt.2.dijkstra
 export ENDIANESS := -DAC_GUEST_BIG_ENDIAN
 
 
