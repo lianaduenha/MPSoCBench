@@ -16,8 +16,6 @@
 #ifndef  _MIPS300_PARMS_H
 #define  _MIPS300_PARMS_H
 
-#define  AC_MEM_HIERARCHY 	 //!< Indicates that a memory hierarchy was declared.
-
 #define  AC_ACTION_STOP 2	 //!< Indicates action value to stop used by longjmp.
 
 namespace mips300_parms {
@@ -29,7 +27,7 @@ static const unsigned int AC_DEC_FORMAT_NUMBER = 3; 	 //!< Number of Formats dec
 static const unsigned int AC_DEC_LIST_NUMBER = 96; 	 //!< Number of decodification lists used by decoder.
 static const unsigned int AC_MAX_BUFFER = 4; 	 //!< This is the size needed by decoder buffer. It is equal to the biggest instruction size.
 static const unsigned int AC_WORDSIZE = 32; 	 //!< Architecture wordsize in bits.
-static const unsigned int AC_FREQUENCY = 200; 	 //!< Architecture frequency in Mhz.
+static const unsigned int AC_FREQUENCY = 300; 	 //!< Architecture frequency in Mhz.
 static const unsigned int AC_FETCHSIZE = 32; 	 //!< Architecture fetchsize in bits.
 static const unsigned int AC_MATCH_ENDIAN = 0; 	 //!< If the simulated arch match the endian with host.
 static const unsigned int AC_PROC_ENDIAN = 1; 	 //!< The simulated arch is big endian?

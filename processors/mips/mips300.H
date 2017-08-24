@@ -57,13 +57,13 @@ public:
   sc_event wake;
 
   //!Constructor.
-  mips300( sc_module_name name_ ): ac_module(name_), mips300_arch(), ISA(*this), intr_port_hnd(*this,&wake), intr_port("intr_port", intr_port_hnd) {
+  mips300( sc_module_name name_, mips300_parms::ac_word gl_id=0): ac_module(name_), mips300_arch(), ISA(*this), intr_port_hnd(*this,&wake), intr_port("intr_port", intr_port_hnd) {
     SC_THREAD( behavior );
     sensitive << wake;
     has_delayed_load = false; 
     start_up=1;
-    id.write(globalId++);
-    set_proc_freq(200);
+    id.write(gl_id);
+    set_proc_freq(300);
   }
 
   void set_proc_freq(unsigned int proc_freq);

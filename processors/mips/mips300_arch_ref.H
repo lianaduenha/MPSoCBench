@@ -24,11 +24,6 @@
 
 #include  "ac_tlm2_intr_port.H"
 
-#include "ac_cache.H"
-#include "ac_fifo_replacement_policy.H"
-#include "ac_random_replacement_policy.H"
-#include "ac_plrum_replacement_policy.H"
-#include "ac_lru_replacement_policy.H"
 //!Forward class declaration, needed to compile.
 class mips300_arch;
 
@@ -41,8 +36,6 @@ public:
 
   //!Storage Devices.
   ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>& MEM;
-  ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>& IC;
-  ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>& DC;
   ac_reg<mips300_parms::ac_word>& id;
   ac_regbank<32, mips300_parms::ac_word, mips300_parms::ac_Dword>& RB;
   ac_reg<mips300_parms::ac_word>& npc;

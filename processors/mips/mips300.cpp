@@ -521,8 +521,6 @@ void mips300::behavior() {
 #include <ac_args.H>
 
 void mips300::init() {
-  if (ac_cache_traces.find("IC") != ac_cache_traces.end()) IC.set_trace(*ac_cache_traces["IC"]);
-  if (ac_cache_traces.find("DC") != ac_cache_traces.end()) DC.set_trace(*ac_cache_traces["DC"]);
 
 #ifdef AC_VERIFY
   set_queue(av[0]);
@@ -548,8 +546,6 @@ void mips300::init(int ac, char *av[]) {
   args_t args = ac_init_args( ac, av);
   set_args(args.size, args.app_args);
   MEM_mport.load(args.app_filename);
-  if (ac_cache_traces.find("IC") != ac_cache_traces.end()) IC.set_trace(*ac_cache_traces["IC"]);
-  if (ac_cache_traces.find("DC") != ac_cache_traces.end()) DC.set_trace(*ac_cache_traces["DC"]);
 #ifdef AC_VERIFY
   set_queue(av[0]);
 #endif
@@ -606,10 +602,6 @@ void mips300::set_ac_pc(unsigned int value) {
 // Wrapper function to PrintStat().
 void mips300::PrintStat() {
   ac_arch<mips300_parms::ac_word, mips300_parms::ac_Hword>::PrintStat();
-  std::cerr << "cache: IC\n";
-  IC.print_statistics(std::cerr);
-  std::cerr << "cache: DC\n";
-  DC.print_statistics(std::cerr);
 }
 
 // Assigns value to processor frequency and updates cycle time values

@@ -29,7 +29,7 @@ AC_ARCH(mips300){
   ac_reg id;
   ac_wordsize 32;
 
-  ac_frequency 300;
+  ac_frequency 125;
 
   ARCH_CTOR(mips300) {
 

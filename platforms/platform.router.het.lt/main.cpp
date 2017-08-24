@@ -38,10 +38,10 @@ const char *archc_options = "";
 #include "tlm_intr_ctrl.h"
 //#include "tlm_diretorio.h"
 
-#ifdef POWER_SIM
+/*#ifdef POWER_SIM
   #undef POWER_SIM
   #define POWER_SIM "../../processors/mips/powersc" 
-#endif
+#endif*/
 
 #include "../../processors/mips/mips300.H"
 #define PROCESSOR_NAME300 mips300
@@ -108,8 +108,11 @@ int sc_main (int ac, char *av[])
   }
 
 
-  mips300 *proc1 = new mips300("proc1");
-  mips800 *proc2 = new mips800("proc2");
+  mips300 *proc1 = new mips300("proc1", 0);
+  mips300 *proc2 = new mips300("proc2", 1);
+
+  mips800 *proc3 = new mips800("proc3", 2);
+  mips800 *proc4 = new mips800("proc4", 3);
 
   // Platform components
   tlm_memory mem("mem", 0, MEM_SIZE - 1); // memory
@@ -134,18 +137,26 @@ int sc_main (int ac, char *av[])
 
   // Initializing Memports
   
-    proc1->MEM(router.target_export);
-    (proc1->MEM_mport).setProcId(proc1->getId());
-  
+  proc1->MEM(router.target_export);
+  (proc1->MEM_mport).setProcId(proc1->getId());  
 
-    proc2->MEM(router.target_export);
-    (proc2->MEM_mport).setProcId(proc2->getId());
+  proc2->MEM(router.target_export);
+  (proc2->MEM_mport).setProcId(proc2->getId());
+
+  proc3->MEM(router.target_export);
+  (proc3->MEM_mport).setProcId(proc3->getId());  
+
+  proc4->MEM(router.target_export);
+  (proc4->MEM_mport).setProcId(proc4->getId());
   
 
     // Binding processors and interruption controller
   
-    intr_ctrl.CPU_port[0](proc1->intr_port);
-    intr_ctrl.CPU_port[1](proc2->intr_port);
+  intr_ctrl.CPU_port[0](proc1->intr_port);
+  intr_ctrl.CPU_port[1](proc2->intr_port);
+
+  intr_ctrl.CPU_port[2](proc3->intr_port);
+  intr_ctrl.CPU_port[3](proc4->intr_port);
 
 
     // Processor 0 starts simulatino in ON-mode while the other processors are in
@@ -174,10 +185,25 @@ int sc_main (int ac, char *av[])
   load_elf<mips300>(*proc1, mem, arguments[0][1], 0x000000, MEM_SIZE);
 
   first_load = false;
-  load_elf<mips800>(*proc2, mem, arguments[1][1], 0x000000, MEM_SIZE);
+  load_elf<mips300>(*proc2, mem, arguments[1][1], 0x000000, MEM_SIZE);
+
+  first_load = false;
+  load_elf<mips800>(*proc3, mem, arguments[2][1], 0x000000, MEM_SIZE);
+
+  first_load = false;
+  load_elf<mips800>(*proc4, mem, arguments[3][1], 0x000000, MEM_SIZE);
+
+  /*irst_load = true;
+  load_elf300(*proc1, mem, arguments[0][1], 0x000000, MEM_SIZE);
+
+  first_load = false;
+  load_elf800(*proc2, mem, arguments[1][1], 0x000000, MEM_SIZE);*/
 
   proc1->init();
   proc2->init();
+
+  proc3->init();
+  proc4->init();
 
 
   report_start(av[0], av[1], av[2]);
@@ -195,6 +221,14 @@ int sc_main (int ac, char *av[])
   proc2->FilePrintStat(global_time_measures);
   proc2->FilePrintStat(local_time_measures);
 
+  proc3->PrintStat();
+  proc3->FilePrintStat(global_time_measures);
+  proc3->FilePrintStat(local_time_measures);
+
+  proc4->PrintStat();
+  proc4->FilePrintStat(global_time_measures);
+  proc4->FilePrintStat(local_time_measures);
+
 
 
   // Printing statistics
@@ -205,25 +239,31 @@ int sc_main (int ac, char *av[])
 
   proc2->ac_sim_stats.time = sc_simulation_time();
   proc2->ac_sim_stats.print();
+
+  proc3->ac_sim_stats.time = sc_simulation_time();
+  proc3->ac_sim_stats.print();
+
+  proc4->ac_sim_stats.time = sc_simulation_time();
+  proc4->ac_sim_stats.print();
  
 #endif
 
 #ifdef POWER_SIM
   
     // Connect Power Information from ArchC with PowerSC
-    proc1->ps.powersc_connect();
+    /*proc1->ps.powersc_connect();
     proc1->IC.powersc_connect();
     proc1->DC.powersc_connect();
 
     proc2->ps.powersc_connect();
     proc2->IC.powersc_connect();
     proc2->DC.powersc_connect();
-  }
-  proc1->ps.report();
+  
+  proc1->ps.report();*/
 #endif
 
 #ifdef POWER_SIM
-  double d = 0;
+  /*double d = 0;
 
   // Connect Power Information from ArchC with PowerSC
   d += proc1->ps.getEnergyPerCore();
@@ -233,20 +273,26 @@ int sc_main (int ac, char *av[])
   fprintf(local_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
           d * 0.000000001);
   fprintf(global_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
-          d * 0.000000001);
+          d * 0.000000001);*/
 #endif
   
 // Checking the status
-  bool status = 0;
+  bool status;
   
   status = status + proc1->ac_exit_status;
   status = status + proc2->ac_exit_status;
 
+  status = status + proc3->ac_exit_status;
+  status = status + proc4->ac_exit_status;
+
   delete proc1;
   delete proc2;
+  delete proc3;
+  delete proc4;
 
   fclose(local_time_measures);
   fclose(global_time_measures);
+
   return status;
 
     
@@ -395,7 +441,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
         if (first_load) {
           lseek(fd, p_offset, SEEK_SET);
           for (j = 0; j < p_filesz;
-               j += sizeof(PROCESSOR_NAME800_parms::ac_word)) {
+               j += sizeof(PROCESSOR_NAME_parms::ac_word)) {
             int tmp;
             ssize_t ret_value =
                 read(fd, &tmp, sizeof(PROCESSOR_NAME_parms::ac_word));
@@ -493,7 +539,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
           exit(EXIT_FAILURE);
         }
 
-        // printf("ac_heap_ptr: %d", proc.ac_heap_ptr);
+        printf("MIPS800: ac_heap_ptr: %d\n", proc.ac_heap_ptr);
         // Set heap to the end of the segment
         if (proc.ac_heap_ptr < p_vaddr + p_memsz)
           proc.ac_heap_ptr = p_vaddr + p_memsz;
@@ -601,7 +647,7 @@ void load_elf300(PROCESSOR_NAME300 &proc, tlm_memory &mem, char *filename,
           exit(EXIT_FAILURE);
         }
 
-        // printf("ac_heap_ptr: %d", proc.ac_heap_ptr);
+         printf("MIPS300: ac_heap_ptr: %d\n", proc.ac_heap_ptr);
         // Set heap to the end of the segment
         if (proc.ac_heap_ptr < p_vaddr + p_memsz)
           proc.ac_heap_ptr = p_vaddr + p_memsz;

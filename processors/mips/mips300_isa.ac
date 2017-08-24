@@ -20,7 +20,7 @@
  *
  */
 
-AC_ISA(mips){
+AC_ISA(mips300){
 
   ac_format Type_R  = "%op:6 %rs:5 %rt:5 %rd:5 %shamt:5 %func:6";
   ac_format Type_I  = "%op:6 %rs:5 %rt:5 %imm:16:s";
@@ -52,7 +52,7 @@ AC_ISA(mips){
      "$ra" = 31;
   }
    
-  ISA_CTOR(mips){
+  ISA_CTOR(mips300){
     
     lb.set_asm("lb %reg, \%lo(%exp)(%reg)", rt, imm, rs);
     lb.set_asm("lb %reg, (%reg)", rt, rs, imm=0);

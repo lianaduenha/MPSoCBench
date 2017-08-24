@@ -36,10 +36,11 @@
 
 // 'using namespace' statement to allow access to all
 // mips-specific datatypes
-using namespace mips300_parms;
+//using namespace mips300_parms;
 
-static int processors_started = 0;
+//static int processors_started = 0;
 #define DEFAULT_STACK_SIZE (256*1024)
+
 
 //!Generic instruction behavior method.
 void ac_behavior( instruction )
@@ -70,7 +71,7 @@ void ac_behavior(begin)
   hi = 0;
   lo = 0;
 
-  RB[29] =  AC_RAM_END - 1024 - processors_started++ * DEFAULT_STACK_SIZE;
+  RB[29] =  AC_RAM_END - 1024 - id * DEFAULT_STACK_SIZE;
 }
 
 //!Behavior called after finishing simulation

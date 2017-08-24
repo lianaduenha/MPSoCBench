@@ -5,7 +5,7 @@ SHELL := /bin/bash
 
 ECHO := /bin/echo -e
 CC = $(CROSS)
-TARGET = $(SOFTWARE).$(PROCESSOR)
+TARGET = $(SOFTWARE).$(PROCESSOR_BASE)
 
 CFLAGS = -msoft-float -DNPROC=$(NUMPROCESSORS) $(POWER_SIM_FLAG) -specs=archc
 

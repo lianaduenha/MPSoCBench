@@ -15,19 +15,12 @@
 
 #include "mips300_arch.H"
 
-#include "ac_cache_if.H"
 
 mips300_arch::mips300_arch() :
   ac_arch_dec_if<mips300_parms::ac_word, mips300_parms::ac_Hword>(mips300_parms::AC_MAX_BUFFER),
   ac_pc("ac_pc", 0),
   MEM("MEM", 536870912U),
   MEM_mport(*this, MEM),
-  IC(MEM_mport,globalId),
-  IC_if(IC),
-  IC_mport(*this, IC_if),
-  DC(MEM_mport,globalId),
-  DC_if(DC),
-  DC_mport(*this, DC_if),
   id("id", 0),
   RB("RB"),
   npc("npc", 0),
@@ -38,8 +31,8 @@ mips300_arch::mips300_arch() :
   ac_mt_endian = mips300_parms::AC_MATCH_ENDIAN;
   ac_tgt_endian = mips300_parms::AC_PROC_ENDIAN;
 
-  INST_PORT = &IC_mport;
-  DATA_PORT = &DC_mport;
+  INST_PORT = &MEM_mport;
+  DATA_PORT = &MEM_mport;
 }
 
 int mips300_arch::globalId = 0;

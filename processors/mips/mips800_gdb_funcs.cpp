@@ -20,18 +20,18 @@
  *
  */
 
-#include "mips.H"
+#include "mips800.H"
 
 // 'using namespace' statement to allow access to all
 // mips-specific datatypes
 using namespace mips_parms;
 
-int mips::nRegs(void) {
+int mips800::nRegs(void) {
    return 73;
 }
 
 
-ac_word mips::reg_read( int reg ) {
+ac_word mips800::reg_read( int reg ) {
   /* general purpose registers */
   if ( ( reg >= 0 ) && ( reg < 32 ) )
     return RB.read( reg );
@@ -50,7 +50,7 @@ ac_word mips::reg_read( int reg ) {
 }
 
 
-void mips::reg_write( int reg, ac_word value ) {
+void mips800::reg_write( int reg, ac_word value ) {
   /* general purpose registers */
   if ( ( reg >= 0 ) && ( reg < 32 ) )
     RB.write( reg, value );
@@ -67,11 +67,11 @@ void mips::reg_write( int reg, ac_word value ) {
 }
 
 
-unsigned char mips::mem_read( unsigned int address ) {
+unsigned char mips800::mem_read( unsigned int address ) {
   return INST_PORT->read_byte( address );
 }
 
 
-void mips::mem_write( unsigned int address, unsigned char byte ) {
+void mips800::mem_write( unsigned int address, unsigned char byte ) {
   INST_PORT->write_byte( address, byte );
 }

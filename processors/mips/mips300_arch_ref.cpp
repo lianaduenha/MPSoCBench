@@ -19,5 +19,5 @@
 //!/Default constructor.
 mips300_arch_ref::mips300_arch_ref(mips300_arch& arch) : ac_arch_ref<mips300_parms::ac_word, mips300_parms::ac_Hword>(arch),
   ac_pc(arch.ac_pc),
-  MEM(arch.MEM_mport),   IC(arch.IC_mport),   DC(arch.DC_mport),   id(arch.id),   RB(arch.RB),   npc(arch.npc),   hi(arch.hi),   lo(arch.lo), intr_reg(arch.intr_reg)  {}
+  MEM(arch.MEM_mport),   id(arch.id),   RB(arch.RB),   npc(arch.npc),   hi(arch.hi),   lo(arch.lo), intr_reg(arch.intr_reg)  {}
 

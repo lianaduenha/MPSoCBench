@@ -25,12 +25,6 @@
 #include  "ac_tlm2_port.H"
 #include  "ac_tlm2_intr_port.H"
  
-#include "ac_cache.H"
-#include "ac_fifo_replacement_policy.H"
-#include "ac_random_replacement_policy.H"
-#include "ac_plrum_replacement_policy.H"
-#include "ac_lru_replacement_policy.H"
-#include "ac_cache_if.H"
 //!ArchC class for model-specific architectural resources.
 
 class mips300_arch : public ac_arch_dec_if<mips300_parms::ac_word, mips300_parms::ac_Hword> {
@@ -42,12 +36,6 @@ public:
   //!Storage Devices.
   ac_tlm2_port MEM;
   ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword> MEM_mport;
-  ac_write_through_cache<32, 8, 2, mips300_parms::ac_word, ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>, ac_random_replacement_policy> IC;
-  ac_cache_if<mips300_parms::ac_word, mips300_parms::ac_Hword, ac_write_through_cache<32, 8, 2, mips300_parms::ac_word, ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>, ac_random_replacement_policy> > IC_if;
-  ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword> IC_mport;
-  ac_write_through_cache<32, 8, 2, mips300_parms::ac_word, ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>, ac_random_replacement_policy> DC;
-  ac_cache_if<mips300_parms::ac_word, mips300_parms::ac_Hword, ac_write_through_cache<32, 8, 2, mips300_parms::ac_word, ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>, ac_random_replacement_policy> > DC_if;
-  ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword> DC_mport;
   ac_reg<mips300_parms::ac_word> id;
   ac_regbank<32, mips300_parms::ac_word, mips300_parms::ac_Dword> RB;
   ac_reg<mips300_parms::ac_word> npc;

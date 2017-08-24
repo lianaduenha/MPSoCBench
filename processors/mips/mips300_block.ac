@@ -41,8 +41,8 @@ AC_ARCH(mips300){
   //ac_icache   IC("2w", 128, 32, "wb", "fifo");
   //ac_dcache   DC("2w", 512, 32, "wt", "fifo");
   
-  ac_icache   IC("2w", 64, 8, "wt", "random");
-  ac_dcache   DC("2w", 64, 8, "wt", "random");
+  //ac_icache   IC("2w", 64, 8, "wt", "random");
+  //ac_dcache   DC("2w", 64, 8, "wt", "random");
 
   ac_tlm2_intr_port intr_port;
  
@@ -54,12 +54,12 @@ AC_ARCH(mips300){
   ac_wordsize 32;
   ac_fetchsize 32;
 
-  ac_frequency 200; //
+  ac_frequency 300; //
 
   ARCH_CTOR(mips300) {
     ac_isa("mips300_isa.ac");
     set_endian("big");
-    IC.bindTo(MEM);
-    DC.bindTo(MEM);
+    //IC.bindTo(MEM);
+    //DC.bindTo(MEM);
   };
 };
