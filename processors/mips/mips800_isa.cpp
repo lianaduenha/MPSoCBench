@@ -38,7 +38,7 @@
 // mips-specific datatypes
 //using namespace mips800_parms;
 
-//static int processors_started = 0;
+/*static int processors_started = 0;*/
 #define DEFAULT_STACK_SIZE (256*1024)
 
 
