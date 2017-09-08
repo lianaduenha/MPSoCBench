@@ -21,11 +21,11 @@ mips300_arch::mips300_arch() :
   ac_pc("ac_pc", 0),
   MEM("MEM", 536870912U),
   MEM_mport(*this, MEM),
-  id("id", 0),
   RB("RB"),
   npc("npc", 0),
   hi("hi", 0),
-  lo("lo", 0)
+  lo("lo", 0),
+  id("id", 0)
   ,intr_reg("instr_reg",1) {
 
   ac_mt_endian = mips300_parms::AC_MATCH_ENDIAN;

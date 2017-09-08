@@ -149,7 +149,7 @@ int sc_main(int ac, char *av[]) {
     sprintf(number_str, "%d", id);
     strcat(name, number_str);
     procs_300.push_back(new mips300(name, id));
-    (procs_300[i]->MEM_mport).setProcId(procs_300[i]->getId());
+    (procs_300[i]->MEM_mport).setProcId(id);
     id++;
   }
 
@@ -161,7 +161,7 @@ int sc_main(int ac, char *av[]) {
     sprintf(number_str, "%d", id);
     strcat(name, number_str);
     procs_800.push_back(new mips800(name, id));
-    (procs_800[i]->MEM_mport).setProcId(procs_800[i]->getId());
+    (procs_800[i]->MEM_mport).setProcId(id);
     id++;
   }
    
@@ -180,10 +180,12 @@ int sc_main(int ac, char *av[]) {
   int aux = 0;
   for (int i = 0; i < N_CORES_300; i++) {
     intr_ctrl.CPU_port[aux](procs_300[i]->intr_port);
+    aux++;
   }
 
   for (int i = 0; i < N_CORES_800; i++) {
     intr_ctrl.CPU_port[aux](procs_800[i]->intr_port);
+    aux++;
   }
 
   
@@ -299,7 +301,6 @@ int sc_main(int ac, char *av[]) {
      
 #endif
 
-
   int b = 0;
   while(b < procs_300.size()){
 
@@ -313,6 +314,7 @@ int sc_main(int ac, char *av[]) {
     wrMS++;
     emptySlaves++;
     noc.tableOfRouts.newEntry(line, column);
+
     inc (line,column,r);
     b++;
   }
@@ -325,7 +327,7 @@ int sc_main(int ac, char *av[]) {
     noc.wrapper[wrMS].LOCAL_init_socket.bind(noc.slaveEmptyNodes[emptySlaves].LOCAL_slave_target_socket);
 
     #ifdef POWER_SIM
-      //noc.wrapper[wrMS].initDFS(procs_300[b]);
+      //noc.wrapper[wrMS].initDFS(procs_800[b]);
     #endif
 
     wrMS++;
@@ -335,12 +337,16 @@ int sc_main(int ac, char *av[]) {
     b++;
   }
 
+  printf("line: %d column: %d \n",line, column);
+
 
   while (line < noc.getNumberOfLines()) {
     while (column < noc.getNumberOfColumns()) {
       
       noc.wrapper[wrMS].LOCAL_init_socket.bind(noc.wrapper[wrMS].LOCAL_target_socket);
       wrMS++;
+
+      //inc (line,column,r);
       
       column++;
     }
@@ -348,8 +354,10 @@ int sc_main(int ac, char *av[]) {
     line++;
   }
 
+
+
   noc.preparingRoutingTable();
-  noc.print();
+  //noc.print();
 
   // *****************************************************************************************
   // Preparing for Simulation

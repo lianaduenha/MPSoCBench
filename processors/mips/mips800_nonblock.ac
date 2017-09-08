@@ -34,14 +34,14 @@
  *
  */
 
-AC_ARCH(mips){
+AC_ARCH(mips800){
 
   ac_tlm2_nb_port  MEM:512M;
   //ac_icache   IC("2w", 128, 32, "wb", "fifo");
   //ac_dcache   DC("2w", 512, 32, "wt", "fifo");
   
-  ac_icache   IC("dm", 64, 8, "wt", "none");
-  ac_dcache   DC("dm", 64, 8, "wt", "none");
+  //ac_icache   IC("dm", 64, 8, "wt", "none");
+  //ac_dcache   DC("dm", 64, 8, "wt", "none");
 
   ac_tlm2_intr_port intr_port;
 
@@ -52,14 +52,14 @@ AC_ARCH(mips){
   ac_wordsize 32;
   ac_fetchsize 32;
   ac_reg id;
+  ac_frequency 800;
 
-  ARCH_CTOR(mips) {
+  ARCH_CTOR(mips800) {
 
-    ac_isa("mips_isa.ac");
+    ac_isa("mips800_isa.ac");
     set_endian("big");
-
-	IC.bindTo(MEM);
-    DC.bindTo(MEM);
+	  //IC.bindTo(MEM);
+    //DC.bindTo(MEM);
 
 
   };

@@ -36,11 +36,11 @@ public:
 
   //!Storage Devices.
   ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword>& MEM;
-  ac_reg<mips300_parms::ac_word>& id;
   ac_regbank<32, mips300_parms::ac_word, mips300_parms::ac_Dword>& RB;
   ac_reg<mips300_parms::ac_word>& npc;
   ac_reg<mips300_parms::ac_word>& hi;
   ac_reg<mips300_parms::ac_word>& lo;
+  ac_reg<mips300_parms::ac_word>& id;
   ac_reg<mips300_parms::ac_word>& intr_reg;
 
   //!Constructor.

@@ -1,0 +1,74 @@
+{
+    "processors": 
+    [
+        {
+            "nome" : "mips1",
+            "isa" : "mips ",
+            "frequencia" : 400,
+            "fetchsize" : 32,
+            "wordsize" :32,
+            "memsize" : 512,
+            "RB": 32,
+
+            "IC_cache" :
+            {
+                "associatividade": "2w",
+                "quantidade de blocos": 128,
+                "tamanho do bloco" : 32, 
+                "politica de escrita" :"wt",
+                "politica de substituição" : "fifo" 
+            },
+ 
+            "DC_cache" : 
+            {
+                "associatividade" : "4w",
+                "quantidade de blocos" : 64,
+                "tamanho do bloco" : 32, 
+                "politica de escrita" : "wt",
+                "politica de substituição" : "lru"
+            }
+        },
+
+        {
+            "nome" : "mips2",
+            "isa" : "mips ",
+            "frequencia" : 700,
+            "fetchsize" : 32,
+            "wordsize" :32,
+            "memsize" : 512,
+            "RB": 32,
+
+            "IC_cache" :
+            {
+                "associatividade": "2w",
+                "quantidade de blocos": 128,
+                "tamanho do bloco" : 32, 
+                "politica de escrita" :"wt",
+                "politica de substituição" : "fifo"
+            },
+
+            "DC_cache" : 
+            {
+                "associatividade" : "4w",
+                "quantidade de blocos" : 64,
+                "tamanho do bloco" : 32, 
+                "politica de escrita" : "wt",
+                "politica de substituição" : "lru"
+            }
+        }
+    ],
+     
+    "platform":
+    {
+        "proc_base": "mips",
+        "interconection" : "noc.lt",
+        "n_cores" :
+        {
+            "mips1": 2,
+            "mips2" : 2
+        },
+
+        "benchmark": "dijkstra",
+        "power": true
+    }
+}

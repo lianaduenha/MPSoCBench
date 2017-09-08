@@ -22,7 +22,7 @@
 #include  "ac_memport.H"
 #include  "ac_regbank.H"
 #include  "ac_reg.H"
-#include  "ac_tlm2_port.H"
+#include  "ac_tlm2_nb_port.H"
 #include  "ac_tlm2_intr_port.H"
  
 //!ArchC class for model-specific architectural resources.
@@ -34,13 +34,13 @@ public:
   ac_reg<unsigned> ac_pc;
 
   //!Storage Devices.
-  ac_tlm2_port MEM;
+  ac_tlm2_nb_port MEM;
   ac_memport<mips300_parms::ac_word, mips300_parms::ac_Hword> MEM_mport;
-  ac_reg<mips300_parms::ac_word> id;
   ac_regbank<32, mips300_parms::ac_word, mips300_parms::ac_Dword> RB;
   ac_reg<mips300_parms::ac_word> npc;
   ac_reg<mips300_parms::ac_word> hi;
   ac_reg<mips300_parms::ac_word> lo;
+  ac_reg<mips300_parms::ac_word> id;
 #define SLEEP_AWAKE_MODE
   ac_reg<mips300_parms::ac_word> intr_reg;
 
