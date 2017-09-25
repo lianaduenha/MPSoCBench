@@ -2,9 +2,10 @@
     "processors": 
     [
         {
-            "nome" : "mips1",
-            "isa" : "mips ",
-            "frequencia" : 400,
+
+            "name" : "mips200",
+            "isa" : "mips",
+            "frequency" : 400,
             "fetchsize" : 32,
             "wordsize" :32,
             "memsize" : 512,
@@ -12,27 +13,27 @@
 
             "IC_cache" :
             {
-                "associatividade": "2w",
-                "quantidade de blocos": 128,
-                "tamanho do bloco" : 32, 
-                "politica de escrita" :"wt",
-                "politica de substituição" : "fifo" 
+                "associativity": "2w",
+                "number_of_blocks": 128,
+                "block_size" : 32, 
+                "write_policy" :"wt",
+                "replacement_policy" : "fifo" 
             },
- 
-            "DC_cache" : 
+
+            "DC_cache" :
             {
-                "associatividade" : "4w",
-                "quantidade de blocos" : 64,
-                "tamanho do bloco" : 32, 
-                "politica de escrita" : "wt",
-                "politica de substituição" : "lru"
+                "associativity": "4w",
+                "number_of_blocks": 64,
+                "block_size" : 32, 
+                "write_policy" :"wt",
+                "replacement_policy" : "random" 
             }
         },
 
         {
-            "nome" : "mips2",
-            "isa" : "mips ",
-            "frequencia" : 700,
+            "name" : "mips450",
+            "isa" : "mips",
+            "frequency" : 700,
             "fetchsize" : 32,
             "wordsize" :32,
             "memsize" : 512,
@@ -40,32 +41,33 @@
 
             "IC_cache" :
             {
-                "associatividade": "2w",
-                "quantidade de blocos": 128,
-                "tamanho do bloco" : 32, 
-                "politica de escrita" :"wt",
-                "politica de substituição" : "fifo"
+                "associativity": "2w",
+                "number_of_blocks": 128,
+                "block_size" : 32, 
+                "write_policy" :"wt",
+                "replacement_policy" : "fifo" 
             },
 
-            "DC_cache" : 
+            "DC_cache" :
             {
-                "associatividade" : "4w",
-                "quantidade de blocos" : 64,
-                "tamanho do bloco" : 32, 
-                "politica de escrita" : "wt",
-                "politica de substituição" : "lru"
+                "associativity": "4w",
+                "number_of_blocks": 64,
+                "block_size" : 32, 
+                "write_policy" :"wt",
+                "replacement_policy" : "lru" 
             }
         }
     ],
-     
+
     "platform":
     {
         "proc_base": "mips",
-        "interconection" : "noc.lt",
+        "interconection" : "noc", 
+        "timing": "at", 
         "n_cores" :
         {
             "mips1": 2,
-            "mips2" : 2
+            "mips2": 2
         },
 
         "benchmark": "dijkstra",
