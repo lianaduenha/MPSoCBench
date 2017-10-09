@@ -262,29 +262,36 @@ int sc_main (int ac, char *av[])
     #ifdef POWER_SIM
       
         // Connect Power Information from ArchC with PowerSC
-        /*proc1->ps.powersc_connect();
-        proc1->IC.powersc_connect();
-        proc1->DC.powersc_connect();
 
-        proc2->ps.powersc_connect();
-        proc2->IC.powersc_connect();
-        proc2->DC.powersc_connect();
-      
-      proc1->ps.report();*/
+        /*for (i = 0; i < N_CORES_300; i++) {
+          procs_300[i]->ps.powersc_connect();
+          procs_300[i]->IC.powersc_connect();
+          procs_300[i]->DC.powersc_connect();
+        }
+
+        for (i = 0; i < N_CORES_800; i++) {
+          procs_800[i]->ps.powersc_connect();
+          procs_800[i]->IC.powersc_connect();
+          procs_800[i]->DC.powersc_connect();
+        }
+
+        procs_800[N_CORES_800 - 1]->ps.report();*/
     #endif
 
     #ifdef POWER_SIM
       /*double d = 0;
 
       // Connect Power Information from ArchC with PowerSC
-      d += proc1->ps.getEnergyPerCore();
-      d += proc2->ps.getEnergyPerCore();
+      for (i = 0; i < N_CORES_300; i++) {
+          d += procs_300[i]->ps.getEnergyPerCore();          
+      }
+      for (i = 0; i < N_CORES_800; i++) {
+          d += procs_800[i]->ps.getEnergyPerCore();          
+      }
       
       printf("\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ", d * 0.000000001);
-      fprintf(local_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
-              d * 0.000000001);
-      fprintf(global_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ",
-              d * 0.000000001);*/
+      fprintf(local_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ", d * 0.000000001);
+      fprintf(global_time_measures, "\n\nTOTAL ENERGY (ALL CORES): %.10f J\n\n ", d * 0.000000001);*/
     #endif
     
     // Checking the status

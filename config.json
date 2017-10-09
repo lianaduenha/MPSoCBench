@@ -9,6 +9,7 @@
                   "wordsize" :32,
                   "memsize" : 512,
                   "RB": 32,
+                  "endianness": "big",
 
                   "IC_cache" :
                   {
@@ -38,6 +39,7 @@
                   "wordsize" :32,
                   "memsize" : 512,
                   "RB": 32,
+                  "endianness": "big",
 
                   "IC_cache" :
                   {

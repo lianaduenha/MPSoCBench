@@ -3,13 +3,14 @@
     [
         {
 
-            "name" : "mips200",
+            "name" : "mips300",
             "isa" : "mips",
-            "frequency" : 400,
+            "frequency" : 300,
             "fetchsize" : 32,
             "wordsize" :32,
             "memsize" : 512,
             "RB": 32,
+            "endianness": "big",
 
             "IC_cache" :
             {
@@ -31,13 +32,14 @@
         },
 
         {
-            "name" : "mips450",
+            "name" : "mips800",
             "isa" : "mips",
-            "frequency" : 700,
+            "frequency" : 800,
             "fetchsize" : 32,
             "wordsize" :32,
             "memsize" : 512,
             "RB": 32,
+            "endianness": "big",
 
             "IC_cache" :
             {
@@ -62,12 +64,12 @@
     "platform":
     {
         "proc_base": "mips",
-        "interconection" : "noc", 
-        "timing": "at", 
+        "interconection" : "router", 
+        "timing": "lt", 
         "n_cores" :
         {
-            "mips1": 2,
-            "mips2": 2
+            "mips300": 2,
+            "mips800": 2
         },
 
         "benchmark": "dijkstra",

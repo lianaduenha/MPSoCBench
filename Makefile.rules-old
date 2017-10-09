@@ -6,7 +6,7 @@ export LIB_DIR:= `pkg-config --libs systemc archc` \
   $(foreach ip, $(IP), -L $(ROOT)/ip/$(ip)) \
   $(foreach is, $(IS), -L $(ROOT)/is/$(is)) \
   $(foreach wrapper, $(WRAPPER), -L $(ROOT)/wrappers/$(wrapper)) \
-  $(foreach processor, $(PROCESSOR_BASE), -L $(ROOT)/processors/temp-mips1-mips2/)
+  $(foreach processor, $(PROCESSOR_BASE), -L $(ROOT)/processors/$(processor))
 
 export INC_DIR:= `pkg-config --cflags systemc archc` \
   $(foreach ip, $(IP), -I $(ROOT)/ip/$(ip)) \
