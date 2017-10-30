@@ -6,13 +6,13 @@ export LIB_DIR:= `pkg-config --libs systemc archc` \
   $(foreach ip, $(IP), -L $(ROOT)/ip/$(ip)) \
   $(foreach is, $(IS), -L $(ROOT)/is/$(is)) \
   $(foreach wrapper, $(WRAPPER), -L $(ROOT)/wrappers/$(wrapper)) \
-  $(foreach processor, $(PROCESSOR_BASE), -L $(ROOT)/processors/temp-mips1-mips2/)
+  $(foreach processor, $(PROCESSOR_BASE), -L $(ROOT)/processors/$(FOLDER))
 
 export INC_DIR:= `pkg-config --cflags systemc archc` \
   $(foreach ip, $(IP), -I $(ROOT)/ip/$(ip)) \
   $(foreach is, $(IS), -I $(ROOT)/is/$(is)) \
   $(foreach wrapper, $(WRAPPER), -I $(ROOT)/wrappers/$(wrapper)) \
-  $(foreach processor, $(PROCESSOR), -I $(ROOT)/processors/$(processor))
+  $(foreach processor, $(PROCESSOR_BASE), -I $(ROOT)/processors/$(FOLDER))
 
 export LIBS:= \
   $(foreach processor, $(PROCESSOR_BASE), -l$(processor))\
@@ -115,11 +115,11 @@ het2:
 	for sw in $(SW) ; do \
             cp sw/$$sw/*.x platforms/$(PLATFORM) ; done
 	echo Making Platform $(PLATFORM)
-	cd platforms/$(PLATFORM); $(MAKE);
+	cd platforms/temp.$(PLATFORM); $(MAKE);
 
 	echo Creating rundir for $(RUNDIRNAME) ...
 	cd $(ROOT)/rundir ; mkdir -p $(RUNDIRNAME);
-	cd $(ROOT) ; $(MAKE) copy clean;
+	cd $(ROOT) ; $(MAKE) copy_het clean;
 	
 #------------------------------------------------------
 clean:
@@ -173,6 +173,21 @@ copy:
 	cd is/tlm_noc_at; $(MAKE) copy;
 	for sw in $(SW) ; do cd sw/$$sw ; \
         $(MAKE) copy; done
+
+#------------------------------------------------------
+copy_het:
+	cd $(ROOT)
+	cd platforms/temp.$(PLATFORM); $(MAKE) copy;
+	cd $(ROOT)
+	cd is/tlm_noc_at; $(MAKE) copy;
+	for sw in $(SW) ; do cd sw/$$sw ; \
+        $(MAKE) copy; done
+
+#------------------------------------------------------
+run_het2: het2
+	cd $(ROOT)
+	cd rundir/$(RUNDIRNAME); ./$(PLATFORM).x $(SOFTWARE).$(PROCESSOR_BASE).x $(NUMPROCESSORS) ; make -f Makefile.check check
+
 #------------------------------------------------------
 run_het: het
 	cd $(ROOT)

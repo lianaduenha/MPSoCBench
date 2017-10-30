@@ -3,7 +3,7 @@
     [
         {
 
-            "name" : "mips300",
+            "name" : "mips1",
             "isa" : "mips",
             "frequency" : 300,
             "fetchsize" : 32,
@@ -32,7 +32,7 @@
         },
 
         {
-            "name" : "mips800",
+            "name" : "mips2",
             "isa" : "mips",
             "frequency" : 800,
             "fetchsize" : 32,
@@ -68,8 +68,8 @@
         "timing": "lt", 
         "n_cores" :
         {
-            "mips300": 2,
-            "mips800": 2
+            "mips1": 2,
+            "mips2": 2
         },
 
         "benchmark": "dijkstra",

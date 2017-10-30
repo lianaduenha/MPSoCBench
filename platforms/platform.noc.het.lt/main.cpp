@@ -383,13 +383,23 @@ int sc_main(int ac, char *av[]) {
 #endif
 
 #ifdef POWER_SIM
-  /*for (int i = 0; i < N_WORKERS; i++) {
-    // Connect Power Information from ArchC with PowerSC
-    processors[i]->ps.powersc_connect();
-    processors[i]->DC.powersc_connect();
-    processors[i]->IC.powersc_connect();
+
+  // Connect Power Information from ArchC with PowerSC
+
+  /*for (i = 0; i < N_CORES_300; i++) {
+    procs_300[i]->ps.powersc_connect();
+    procs_300[i]->IC.powersc_connect();
+    procs_300[i]->DC.powersc_connect();
   }
-  processors[N_WORKERS - 1]->ps.report();*/
+
+  for (i = 0; i < N_CORES_800; i++) {
+    procs_800[i]->ps.powersc_connect();
+    procs_800[i]->IC.powersc_connect();
+    procs_800[i]->DC.powersc_connect();
+  }
+
+  procs_800[N_CORES_800 - 1]->ps.report();*/
+
 #endif
 
 #ifdef POWER_SIM

@@ -140,9 +140,7 @@ int sc_main(int ac, char *av[]) {
   int N_CORES_800 = 2;
 
 
-  vector<mips300 *> procs_300;
-
-  
+  vector<mips300 *> procs_300;  
   for (int i = 0; i < N_CORES_300; i++) {
     char name[10] = "proc";
     char number_str[3];
@@ -154,7 +152,6 @@ int sc_main(int ac, char *av[]) {
   }
 
   vector<mips800 *> procs_800;
-
   for (int i = 0; i < N_CORES_800; i++) {
     char name[10] = "proc";
     char number_str[3];

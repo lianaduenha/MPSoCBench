@@ -115,7 +115,7 @@ het2:
 	for sw in $(SW) ; do \
             cp sw/$$sw/*.x platforms/$(PLATFORM) ; done
 	echo Making Platform $(PLATFORM)
-	cd platforms/$(PLATFORM); $(MAKE);
+	cd platforms/temp.$(PLATFORM); $(MAKE);
 
 	echo Creating rundir for $(RUNDIRNAME) ...
 	cd $(ROOT)/rundir ; mkdir -p $(RUNDIRNAME);
