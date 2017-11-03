@@ -1,0 +1,8 @@
+diferenças nos arquivos;
+
+mips300_isa.cpp
+mips300_syscall.cpp
+
+quando o usuario escolher nao excluir os arquivos temporario
+e ele execultar uma proxima vez comparametros diferentes 
+acumulará pastas temporarias.

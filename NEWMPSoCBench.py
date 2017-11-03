@@ -9,6 +9,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 def command_line_handler():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('configfile', metavar='arquivo.json', help='configuration file')
+	parser.add_argument('-nc', '--notclear', dest='nc', action='store_true', \
+						help="Erase temporary folders of simulation")
 	return parser.parse_args()
 
 
@@ -19,7 +21,9 @@ def config_parser_json(args):
 		parsed_json = json.load(config)
 
 
-		controller = Controller(ROOT, parsed_json['platform'], parsed_json['processors'])
+		controller = Controller(ROOT, parsed_json['platform'],\
+								 parsed_json['processors'],\
+								 True if args.nc == False else False)
 		controller.generate_processors()
 		controller.print_values()
 

@@ -40,14 +40,16 @@ class Controller:
 	all_processors 	= "" # nome dos processadores para geracao do makefile
 	rundirname 		= ""
 	folder 			= ""
-	name_plat = ""
+	name_plat 		= ""
+	clean 			= True
 
 
 
-	def __init__(self, root, platform, processors):
+	def __init__(self, root, platform, processors, clean):
 
 		self.ROOT 				= root
 		self.processors 		= processors
+		self.clean 				= clean
 		self.set_platform(platform)
 
 
@@ -74,24 +76,24 @@ class Controller:
 
 
 	def print_values(self):
-		print("root: " + self.ROOT)
-		print("proc_base: " + self.processor_base)
-		print(self.interconection)
-		print(self.timing)
-		print(self.benchmark)
-		print(self.power)
-		print(self.n_cores)
-		print(self.tot_n_cores)
-		print(self.rundirname)
+		# print("root: " + self.ROOT)
+		# print("proc_base: " + self.processor_base)
+		# print(self.interconection)
+		# print(self.timing)
+		# print(self.benchmark)
+		# print(self.power)
+		# print(self.n_cores)
+		# print(self.tot_n_cores)
+		# print(self.rundirname)
 
-		print(self.makefile(self.folder, \
+		self.makefile(self.folder, \
 							self.processor_base, \
 							self.all_processors, \
 							str(self.tot_n_cores), \
 							self.benchmark, \
 							"", \
 							self.interconection + "." + self.timing, \
-							"mips.noc.het.at.4.dijkstra"))
+							"")
 
 		self.write_in_file(self.ROOT+'/', "Makefile", self.makefile(self.folder, \
 							self.processor_base, \
@@ -102,16 +104,26 @@ class Controller:
 							self.interconection + "." + self.timing, \
 							"mips.noc.het.at.4.dijkstra"))
 
-		print(self.build_makefile_1(self.processors))
+		self.build_makefile_1(self.processors)
 
-		self.write_in_file(self.ROOT + '/processors/' + self.folder + '/', "Makefile_1", self.build_makefile_1(self.processors))
+		self.write_in_file(self.ROOT + '/processors/' + self.folder + '/', \
+			                "Makefile_1", \
+			                self.build_makefile_1(self.processors))
 
-		#os.system("cp /home/thiago/tcc/repository/MPSoCBench/processors/Makefile_1 cp /home/thiago/tcc/repository/MPSoCBench/processors/temp-mips300-mips800/")
-		print(self.build_platform())
+		self.build_platform()
 		
 		self.execution()
-		#print(self.processors)
 
+		if self.clean:
+			self.remove_files_temp()
+
+
+	def remove_files_temp(self):
+
+		if os.path.exists(self.ROOT+"/platforms/temp." + self.name_plat):
+			os.system("rm -R " + self.ROOT+"/platforms/temp." + self.name_plat)
+		if os.path.exists(self.ROOT+"/processors/" + self.folder):
+			os.system("rm -R " + self.ROOT+"/processors/" + self.folder)
 
 
 	def build_platform(self):
@@ -145,7 +157,7 @@ class Controller:
 
 
 	def execution(self):
-		os.system("make clean distclean run_het2")
+		os.system("make clean_het run_het")
 		# path = "rundir/" + plat_rundir
 		# print "Creating rundir for " + path[7:] + "..."
 		# # creates rundir for each platform
@@ -180,7 +192,7 @@ AC_ARCH(' + processor["name"] + '){ \n \
 		ac_isa("' + processor["name"] + '_isa.ac"); \n \
 		set_endian("' + processor["endianness"] + '"); \n \
 		IC.bindTo(MEM); \n \
-		DC.bindTo(MEM); \n \
+		//DC.bindTo(MEM); \n \
 	}; \n \
 }; \n'
 		return txt
@@ -281,7 +293,7 @@ ac_icache IC("'+ cache["associativity"] +'", \
 			'
 		elif type == "DC_cache":
 			txt = '\
-ac_dcache DC("'+ cache["associativity"] +'", \
+//ac_dcache DC("'+ cache["associativity"] +'", \
 '+ str(cache["number_of_blocks"]) +', \
 '+ str(cache["block_size"]) +', \
 "'+ cache["write_policy"] +'", \
@@ -400,15 +412,14 @@ distclean: sim_clean\n\
 
 	def generate_processors(self):
 
-		src = os.path.join(self.ROOT, 'processors/' + self.processor_base + '-base')
+		#src = os.path.join(self.ROOT, 'processors/' + self.processor_base + '-base')
+		src = os.path.join(self.ROOT, 'processors/' + self.processor_base)
 		a = src	
 		
 		srcs = []	
 		path_all_processors = "temp"
 
 		for proc in self.processors:
-
-			print("Building %s" % (proc["name"]))
 
 			self.all_processors +=  proc["name"] + " " 
 
@@ -427,7 +438,8 @@ distclean: sim_clean\n\
 					texto = texto.replace(self.processor_base, proc["name"])
 					texto = texto.replace(self.processor_base.upper(), proc["name"].upper())
 
-					texto = texto.replace("procNumber", "procNumber" + proc["name"])
+					if file == "mips_syscall.cpp":
+						texto = texto.replace("procNumber", "procNumber" + proc["name"])
 
 
 					arq = open(dst +'/'+ file, 'w')
@@ -441,7 +453,7 @@ distclean: sim_clean\n\
 			#gera o arquivo de descricao do processador (ex; mips.ac mipsnoblock, mipsblock)
 			# sera uma descricao unica apartir de agora
 
-			print(self.build_description_processor(proc))
+			
 			self.write_in_file(dst + '/',\
 								proc["name"] + ".ac", \
 								self.build_description_processor(proc))
@@ -449,7 +461,33 @@ distclean: sim_clean\n\
 		self.folder = path_all_processors
 
 		src = os.path.join(self.ROOT, 'processors/' + path_all_processors)	
-		
+
+		if os.path.exists(src):
+			
+			while True:
+				#op = sys.stdin.readline()
+
+				op = input('\
+You have decided not to delete temporary files and folders \n\
+from the last simulation. You need to delete these files. \n\
+Do you want to delete now? (Y / n)')
+
+				if op == 'Y':
+					for folder in os.listdir(self.ROOT+"/platforms/"):
+						if folder.startswith("temp."):
+							os.system("rm -R " + self.ROOT+"/platforms/"+ folder)
+
+					os.system("rm -R " + src)
+					break
+				elif op == 'n':
+					#remove as pastas de processadores temporario
+					for proc in self.processors:
+						if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
+							os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
+					quit()
+				else:
+					print("Press (Y/n)")
+
 		
 		os.makedirs(src)
 		flag = 0
@@ -458,7 +496,13 @@ distclean: sim_clean\n\
 				if file != "powersc":
 					shutil.copy2(d+'/'+file, src)
 
+
 		os.system("cp -R " + a + "/powersc/ " + src + "/powersc")
+
+		#remove as pastas de processadores temporario
+		for proc in self.processors:
+			if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
+				os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
 
 		self.set_rundirname()
 		
@@ -515,7 +559,7 @@ distclean: sim_clean\n\
 		else:
 			make = make + "export WAIT_TRANSPORT_FLAG := \nexport TRANSPORT := block\n"
 		make = make + "export MEM_SIZE_DEFAULT := -DMEM_SIZE=536870912\n"
-		make = make + "export RUNDIRNAME := " + self.name_plat + "\n"
+		make = make + "export RUNDIRNAME := " + self.rundirname + "\n"
 		if proc != 'arm':
 			make = make + "export ENDIANESS := -DAC_GUEST_BIG_ENDIAN\n"
 		else: 
@@ -1097,7 +1141,7 @@ void report_start(char *platform, char *application, char *cores) {\n\
   global_time_measures = fopen(GLOBAL_FILE_MEASURES_NAME, "a");\n\
   local_time_measures = fopen(LOCAL_FILE_MEASURES_NAME, "a");\n\
 \n\
-  printf("\\nMPSoCBench: The simulator is prepared.");\\n\
+  printf("\\nMPSoCBench: The simulator is prepared.");\n\
   printf("\\nMPSoCBench: Beggining of time simulation measurement.\\n");\n\
   gettimeofday(&startTime, NULL);\n\
   fprintf(local_time_measures, "\\n\\n*******************************************"\
@@ -1126,16 +1170,16 @@ void report_end() {\n\
   printf("\\nTotal Time Taken (seconds):\\t%lf", (tE - tS) / 1000000);\n\
 \n\
   sc_core::sc_time time = sc_time_stamp();\n\
-  fprintf(local_time_measures, "\nSimulation advance (seconds):\\t%lf",\
+  fprintf(local_time_measures, "\\nSimulation advance (seconds):\\t%lf",\
           time.to_seconds());\n\
-  fprintf(global_time_measures, "\nSimulation advance (seconds):\\t%lf",\
+  fprintf(global_time_measures, "\\nSimulation advance (seconds):\\t%lf",\
           time.to_seconds());\n\
-  printf("\nSimulation advance (seconds):\\t%lf", time.to_seconds());\n\
+  printf("\\nSimulation advance (seconds):\\t%lf", time.to_seconds());\n\
 \n\
-  printf("\nMPSoCBench: Ending the time simulation measurement.\n");\n\
+  printf("\\nMPSoCBench: Ending the time simulation measurement.\\n");\n\
 }\n\
 \n\
-template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *filename,\
+template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *filename,\n\
               unsigned int offset, unsigned int memsize) {\n\
 \n\
   Elf32_Ehdr ehdr;\n\
@@ -1147,8 +1191,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
   unsigned int data_mem_size = memsize;\n\
 \n\
   if (!filename || ((fd = open(filename, 0)) == -1)) {\n\
-    AC_ERROR("Openning application file '" << filename\n\
-                                           << "': " << strerror(errno) << endl);\n\
+    AC_ERROR("Openning application file '" << filename << "': " << strerror(errno) << endl);\n\
     exit(EXIT_FAILURE);\n\
   }\n\
 \n\
@@ -1181,7 +1224,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
                     convert_endian(2, ehdr.e_phentsize, proc.ac_mt_endian) * i,\
             SEEK_SET);\n\
       if (read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {\n\
-        AC_ERROR("reading ELF program header\n");\n\
+        AC_ERROR("reading ELF program header\\n");\n\
         close(fd);\n\
         exit(EXIT_FAILURE);\n\
       }\n\
@@ -1190,7 +1233,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
         Elf32_Word j;\n\
         Elf32_Addr p_vaddr = convert_endian(4, phdr.p_vaddr, proc.ac_mt_endian);\n\
         Elf32_Word p_memsz = convert_endian(4, phdr.p_memsz, proc.ac_mt_endian);\n\
-        Elf32_Word p_filesz = convert_endian(4, phdr.p_filesz, proc.ac_mt_endian\n\
+        Elf32_Word p_filesz = convert_endian(4, phdr.p_filesz, proc.ac_mt_endian);\n\
         Elf32_Off p_offset = convert_endian(4, phdr.p_offset, proc.ac_mt_endian);\n\
         // Error if segment greater then memory\n\
         if (data_mem_size < p_vaddr + p_memsz) {\n\
@@ -1211,7 +1254,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
           for (j = 0; j < p_filesz; j += sizeof(PROCESSOR_NAME_parms::ac_word)) {\n\
             int tmp;\n\
             ssize_t ret_value = read(fd, &tmp, sizeof(PROCESSOR_NAME_parms::ac_word));\n\
-            int d = convert_endian(sizeof(PROCESSOR_NAME_parms::ac_word), tmp,\
+            int d = convert_endian(sizeof(PROCESSOR_NAME_parms::ac_word), tmp,\n\
                                    proc.ac_mt_endian);\n\
             mem.write(p_vaddr + j + offset, 4, (unsigned char *)&tmp);\n\
           }\n\
@@ -2481,7 +2524,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n  // unsigned int data_mem_size=(0x4FFFFF);\
 \n  unsigned int data_mem_size = memsize;\
 \n\
-\n  if (!filename || ((fd = open(filename, 0)) == -1)) {\
+\n  if (!filename || ((fd = open(filename, 0)) == -1)) {\n\
     AC_ERROR("Openning application file '" << filename\
                                            << "': " << strerror(errno) << endl);\
 \n    exit(EXIT_FAILURE);\

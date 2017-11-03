@@ -1,4 +1,4 @@
-include platforms/$(PLATFORM)/defs.arp
+include platforms/temp.$(PLATFORM)/defs.arp
 
 ROOT=$(PWD)
 
@@ -61,39 +61,6 @@ het:
 	cd $(ROOT)
 	for processor in $(PROCESSOR); do \
             echo Making Processor $$processor ...;\
-            cd processors/$(PROCESSOR_BASE) ; \
-            if [ ! -a Makefile ]; then \
-                $(ARCHC_PREFIX)/bin/acsim $${processor}_$(TRANSPORT).ac $(ACSIM_FLAGS) ; \
-            fi; \
-            cd $(ROOT); done
-	cd $(ROOT)/processors/$(PROCESSOR_BASE) && make -f Makefile_1;	 
-	cd $(ROOT);
-	for ip in $(IP); do echo Making IP $$ip ...; \
-      cd ip/$$ip; $(MAKE) lib; cd $(ROOT); done
-	for is in $(IS); do echo Making IS $$is ...; \
-            cd is/$$is; $(MAKE) lib; cd $(ROOT); done
-	for wrapper in $(WRAPPER); do \
-            echo Making Wrapper $$wrapper ...; \
-            cd wrappers/$$wrapper; $(MAKE) lib; \
-            cd $(ROOT); done
-	for sw in $(SW); do \
-            echo Making Software $$sw ...; cd sw/$$sw; \
-            $(MAKE); cd $(ROOT); done
-	for sw in $(SW) ; do \
-            cp sw/$$sw/*.x platforms/$(PLATFORM) ; done
-	echo Making Platform $(PLATFORM)
-	cd platforms/$(PLATFORM); $(MAKE);
-
-	echo Creating rundir for $(RUNDIRNAME) ...
-	cd $(ROOT)/rundir ; mkdir -p $(RUNDIRNAME);
-	cd $(ROOT) ; $(MAKE) copy clean;
-
-
-#------------------------------------------------------
-het2:
-	cd $(ROOT)
-	for processor in $(PROCESSOR); do \
-            echo Making Processor $$processor ...;\
             cd processors/$(FOLDER) ; \
             if [ ! -a Makefile ]; then \
                 $(ARCHC_PREFIX)/bin/acsim $${processor}.ac $(ACSIM_FLAGS) ; \
@@ -113,13 +80,13 @@ het2:
             echo Making Software $$sw ...; cd sw/$$sw; \
             $(MAKE); cd $(ROOT); done
 	for sw in $(SW) ; do \
-            cp sw/$$sw/*.x platforms/$(PLATFORM) ; done
-	echo Making Platform $(PLATFORM)
+            cp sw/$$sw/*.x platforms/temp.$(PLATFORM) ; done
+	echo Making Platform temp.$(PLATFORM)
 	cd platforms/temp.$(PLATFORM); $(MAKE);
 
 	echo Creating rundir for $(RUNDIRNAME) ...
 	cd $(ROOT)/rundir ; mkdir -p $(RUNDIRNAME);
-	cd $(ROOT) ; $(MAKE) copy_het clean;
+	cd $(ROOT) ; $(MAKE) copy_het clean_het;
 	
 #------------------------------------------------------
 clean:
@@ -144,6 +111,28 @@ clean:
 	cd platforms/$(PLATFORM); $(MAKE) clean
 
 #------------------------------------------------------
+clean_het:
+	cd $(ROOT)
+	for ip in $(IP) ; do cd ip/$$ip ; \
+            $(MAKE) clean ; cd $(ROOT); done
+	for is in $(IS) ; do cd is/$$is ; \
+            $(MAKE) clean ; cd $(ROOT); done
+	for wrapper in $(WRAPPER); do \
+            cd wrappers/$$wrapper; $(MAKE) clean; \
+            cd $(ROOT); done
+	for processor in $(PROCESSOR) ; do \
+            cd processors/$(FOLDER) ; \
+            if [ -a Makefile ]; then \
+                $(MAKE) clean; \
+            fi; \
+            cd $(ROOT); done
+	for sw in $(SW) ; do cd sw/$$sw ; \
+            $(MAKE) clean ; cd $(ROOT); done
+	for sw in $(SW) ; do \
+            rm -f platforms/temp.$(PLATFORM)/*.x; cd $(ROOT); done
+	cd platforms/temp.$(PLATFORM); $(MAKE) clean
+
+#------------------------------------------------------
 distclean:
 	cd $(ROOT)
 	for ip in $(IP) ; do cd ip/$$ip ; \
@@ -164,6 +153,29 @@ distclean:
 	for sw in $(SW) ; do \
             rm -f platforms/$(PLATFORM)/*.x; cd $(ROOT); done
 	cd platforms/$(PLATFORM); $(MAKE) distclean
+
+
+#------------------------------------------------------
+distclean_het:
+	cd $(ROOT)
+	for ip in $(IP) ; do cd ip/$$ip ; \
+            $(MAKE) distclean ; cd $(ROOT); done
+	for is in $(IS) ; do cd is/$$is ; \
+            $(MAKE) distclean ; cd $(ROOT); done
+	for wrapper in $(WRAPPER); do \
+            cd wrappers/$$wrapper; $(MAKE) distclean; \
+            cd $(ROOT); done
+	for processor in $(PROCESSOR) ; do \
+            cd processors/$(FOLDER) ; \
+            if [ -a Makefile ]; then \
+                $(MAKE) distclean; \
+            fi; \
+            cd $(ROOT); done
+	for sw in $(SW) ; do cd sw/$$sw ; \
+            $(MAKE) distclean ; cd $(ROOT); done
+	for sw in $(SW) ; do \
+            rm -f platforms/temp.$(PLATFORM)/*.x; cd $(ROOT); done
+	cd platforms/temp.$(PLATFORM); $(MAKE) distclean
 	
 #------------------------------------------------------
 copy:
@@ -184,14 +196,10 @@ copy_het:
         $(MAKE) copy; done
 
 #------------------------------------------------------
-run_het2: het2
-	cd $(ROOT)
-	cd rundir/$(RUNDIRNAME); ./$(PLATFORM).x $(SOFTWARE).$(PROCESSOR_BASE).x $(NUMPROCESSORS) ; make -f Makefile.check check
-
-#------------------------------------------------------
 run_het: het
 	cd $(ROOT)
 	cd rundir/$(RUNDIRNAME); ./$(PLATFORM).x $(SOFTWARE).$(PROCESSOR_BASE).x $(NUMPROCESSORS) ; make -f Makefile.check check
+
 
 #------------------------------------------------------
 run: all
