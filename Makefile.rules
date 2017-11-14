@@ -57,7 +57,7 @@ all:
 
 
 #------------------------------------------------------
-het:
+procs:
 	cd $(ROOT)
 	for processor in $(PROCESSOR); do \
             echo Making Processor $$processor ...;\
@@ -66,6 +66,10 @@ het:
                 $(ARCHC_PREFIX)/bin/acsim $${processor}.ac $(ACSIM_FLAGS) ; \
             fi; \
             cd $(ROOT); done
+
+#------------------------------------------------------
+het:
+	
 	cd $(ROOT)/processors/$(FOLDER) && make -f Makefile_1;   
 	cd $(ROOT);
 	for ip in $(IP); do echo Making IP $$ip ...; \

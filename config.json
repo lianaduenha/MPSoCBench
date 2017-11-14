@@ -3,14 +3,17 @@
     [
         {
 
-            "name" : "powerpc1",
-            "isa" : "arm",
-            "frequency" : 300,
+            "name" : "mips1",
+            "isa" : "mips",
+            "frequency" : 250,
             "fetchsize" : 32,
             "wordsize" :32,
-            "memsize" : 512,
-            "GPR": 32,
+            "memsize" : 512,            
             "endianness": "big",
+
+            "regbank_1" : 32,
+            "regbank_2" : 0,
+            
 
             "IC_cache" :
             {
@@ -32,14 +35,16 @@
         },
 
         {
-            "name" : "powerpc2",
-            "isa" : "arm",
-            "frequency" : 800,
+            "name" : "mips2",
+            "isa" : "mips",
+            "frequency" : 400,
             "fetchsize" : 32,
             "wordsize" :32,
             "memsize" : 512,
-            "GPR": 32,
             "endianness": "big",
+
+            "regbank_1" : 32,
+            "regbank_2" : 0,
 
             "IC_cache" :
             {
@@ -63,16 +68,22 @@
 
     "platform":
     {
-        "proc_base": "powerpc",
+        "proc_base": "mips",
         "interconection" : "router", 
         "timing": "lt", 
         "n_cores" :
         {
-            "powerpc1": 2,
-            "powerpc2": 2
+            "mips1": 2,
+            "mips2": 2
         },
 
         "benchmark": "dijkstra",
-        "power": true
+
+        "metrics": {
+            "power" : false,
+            "mips1_csv": "acpower_table_mips_ASIC_freepdk45_400Mhz.csv",
+            "mips2_csv": "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
+        }
+
     }
 } 

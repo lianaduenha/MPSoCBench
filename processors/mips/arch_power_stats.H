@@ -28,7 +28,14 @@
 
 /**** Power Tables with multiples profiles (Useful for DVFS control) *****/
 // #define POWER_TABLE_FILE "acpower_table_mips_cycloneV_25Mhz_100Mhz.csv"
-#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv"
+
+
+
+//#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv"
+
+
+
+
 //#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_125_250_400Mhz.csv"
 
 #define WINDOW_REPORT

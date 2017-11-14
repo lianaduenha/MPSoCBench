@@ -36,12 +36,13 @@ class Controller:
 	interconection 	= "" # noc, router
 	timing 			= "" # at, lt
 	benchmark 		= "" # Aplicacao que a plataforma ira simular
-	power 			= "" # Medir consumo (true ou false)
+	power 			= False # Medir consumo (true ou false)
 	all_processors 	= "" # nome dos processadores para geracao do makefile
 	rundirname 		= ""
 	folder 			= ""
 	name_plat 		= ""
 	clean 			= True
+	metrics			= ""
 
 
 
@@ -59,7 +60,8 @@ class Controller:
 		self.interconection 	= platform["interconection"]
 		self.timing 			= platform["timing"]
 		self.benchmark 			= platform["benchmark"]
-		self.power 				= platform["power"]
+		self.metrics			= platform["metrics"]
+		self.power 				= self.metrics["power"]
 		self.n_cores 			= dict(platform["n_cores"])
 
 		for key in self.n_cores:
@@ -155,9 +157,44 @@ class Controller:
 		else:
 			return " "
 
+	def build_csv_processor(self):
+
+		for proc in self.processors:
+
+			file = open(self.ROOT + "/processors/"+ self.folder +"/" + proc["name"] +".H", 'r')
+			txt = file.read()
+			file.close()
+
+			l = txt.split('#ifdef POWER_SIM', 1)
+
+			
+			if self.metrics[proc["name"]+"_csv"] == "":
+				csv = '\
+\n#ifdef POWER_SIM \
+\n#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv" \n' 
+
+			else:
+				csv = '\
+\n#ifdef POWER_SIM \
+\n#define POWER_TABLE_FILE "' + self.metrics[proc["name"]+"_csv"] + '" \n' 
+
+
+			txt = l[0] + csv + l[1]
+
+			file = open(self.ROOT + "/processors/"+ self.folder +"/" + proc["name"] +".H", 'w')
+			file.write(txt)
+			file.close()
+
+
 
 	def execution(self):
-		os.system("make clean_het run_het")
+
+		os.system("make clean_het distclean_het procs")
+
+		if self.power:
+			self.build_csv_processor()
+
+		os.system("make run_het")
 		# path = "rundir/" + plat_rundir
 		# print "Creating rundir for " + path[7:] + "..."
 		# # creates rundir for each platform
@@ -202,15 +239,15 @@ AC_ARCH(' + processor["name"] + '){ \n \
 		if self.processor_base == 'mips':
 			txt = '\n \
 	ac_reg id; \n \
-	ac_regbank RB:'+ str(proc["RB"]) +'; \n \
+	ac_regbank RB:'+ str(proc["regbank_1"]) +'; \n \
 	ac_reg npc; \n \
 	ac_reg hi, lo; \n \
 			'
 
 		elif self.processor_base == 'sparc':
 			txt = '\n \
-	ac_regbank RB:'+ str(proc["RB"]) +'; \n \
-	ac_regbank REGS:'+ str(proc["REGS"]) +'; \n \
+	ac_regbank RB:'+ str(proc["regbank_1"]) +'; \n \
+	ac_regbank REGS:'+ str(proc["regbank_2"]) +'; \n \
 \n \
 	ac_reg npc; \n \
 \n \
@@ -231,7 +268,7 @@ AC_ARCH(' + processor["name"] + '){ \n \
 		elif self.processor_base == 'powerpc':
 			txt = '\n \
 	ac_reg id; \n \
-	ac_regbank GPR:'+ str(proc["GPR"]) +'; \n \
+	ac_regbank GPR:'+ str(proc["regbank_1"]) +'; \n \
 \
 	ac_reg SPRG4; \n \
 	ac_reg SPRG5; \n \
@@ -255,7 +292,7 @@ AC_ARCH(' + processor["name"] + '){ \n \
 
 		else:
 			txt = '\n \
-	ac_regbank RB:'+ str(proc["RB"]) +';\n \
+	ac_regbank RB:'+ str(proc["regbank_1"]) +';\n \
 \
 	ac_reg R14_irq, R14_fiq, R14_svc, R14_abt, R14_und, R13_irq, R13_svc; \n \
 	ac_reg R13_abt, R13_und, R13_fiq;\n \
@@ -545,7 +582,7 @@ Do you want to delete now? (Y / n)')
 
 		# for older compilers
 		#make = make + "\nexport CROSS := " + proc + "-elf-gcc\n"
-		if power:
+		if self.power:
 			pw_flag = " -pw"
 			make = make + "export POWER_SIM_FLAG := -DPOWER_SIM=\\\"\\\"\n"
 		else:
@@ -565,10 +602,10 @@ Do you want to delete now? (Y / n)')
 		else: 
 			make = make + "export ENDIANESS := \n"
 
-		#make = make + "ifeq ($(PROCESSOR),arm)\nexport CFLAGS_AUX := -DPROCARM\nendif\n"
-		#make = make + "ifeq ($(PROCESSOR),mips)\nexport CFLAGS_AUX := -DPROCMIPS\nendif\n"
-		#make = make + "ifeq ($(PROCESSOR),sparc)\nexport CFLAGS_AUX := -DPROCSPARC\nendif\n"
-		#make = make + "ifeq ($(PROCESSOR),powerpc)\nexport CFLAGS_AUX := -DPROCPOWERPC\nendif\n"
+		# make = make + "ifeq ($(PROCESSOR_BASE),arm)\nexport CFLAGS_AUX := -DPROCARM\nendif\n"
+		# make = make + "ifeq ($(PROCESSOR_BASE),mips)\nexport CFLAGS_AUX := -DPROCMIPS\nendif\n"
+		# make = make + "ifeq ($(PROCESSOR_BASE),sparc)\nexport CFLAGS_AUX := -DPROCSPARC\nendif\n"
+		# make = make + "ifeq ($(PROCESSOR_BASE),powerpc)\nexport CFLAGS_AUX := -DPROCPOWERPC\nendif\n"
 		
 		make = make + "include Makefile.rules\n"
 		return make
@@ -594,9 +631,127 @@ Do you want to delete now? (Y / n)')
 
 
 
+	def build_defines(self, defines):
 
 
+			file = open(self.ROOT + "/defines.h", 'r')
+			txt = file.read()
+			file.close()
 
+			# l = txt.split('#define _DEFINES_H', 1)
+			# d = '\n#define _DEFINES_H\n' + defines
+			# txt = l[0] + d + l[1]
+
+			txt = '\
+/******************************************************************************\n\
+ * @file      defines.h\n\
+ * @author    Liana Duenha\n\
+ *\n\
+ * @author    The ArchC Team\n\
+ *            http://www.archc.org/\n\
+ *\n\
+ *            Computer Systems Laboratory (LSC)\n\
+ *            IC-UNICAMP\n\
+ *            http://www.lsc.ic.unicamp.br/\n\
+ * \n\
+ * @date      01, Feb, 2013\n\
+ * @brief     Defines the ArchC TLM 2.0  port.\n\
+\n\
+ *\n\
+ * @attention Copyright (C) 2002-2012 --- The ArchC Team\n\
+ *\n\
+ *******************************************************************************/\n\
+\n\
+#ifndef _DEFINES_H \n\
+#define _DEFINES_H	\n\
+\n\
+// PLATFORM STATIC PARAMETERS\n\
+#define LOCAL_FILE_MEASURES_NAME "local_report.txt"\n\
+#define GLOBAL_FILE_MEASURES_NAME "../../global_report.txt"\n\
+\n\
+#define MAX_WORKERS 64 	/* This is a arbitrary limit for the number of processors. If necessary, this value can be modified, but\n\
+ there is no guarantee that all applications will work properly */\n\
+\n\
+// NOC and Router STATIC PARAMETERS\n\
+#define MAX_LINES 72\n\
+#define MAX_COLUMNS 3 \n\
+#define ON 1\n\
+#define OFF 0\n\
+#define SIZE_OF_BUFFER_PACKAGES 2000\n\
+\n\
+ // These parameters define the address space for IPs\n\
+// We consider that memory address space is from 0 to 0x20000000-1\n\
+// The address to access the Lock IP is 0x20000000\n\
+// The address to access the DVFS IP is 0x21000000\n\
+// The address to access the INTR_CTRL IP is 0x22000000\n\
+// The address to access the DIR IP is 0x23000000\n\
+// Next, we use a DELTA_IP_ADDRESS = 0x100 as a default value\n\
+// If you want to update these values, be carefull maintaining the coherency with the tlm_router, tlm_noc_at and tlm_noc_lt\n\
+// routing definitions (see is/tlm_router, is/tlm_noc_lt, is/tlm_noc_at)\n\
+#define BASE_MEMORY_ADDRESS 536870912 // 0x20000000 -  last memory byte address is 536870911\n\
+\n\
+#define LOCK_ADDRESS        0x20000000\n\
+#define INTR_CTRL_ADDRESS   0X21000000\n\
+#define DIR_ADDRESS         0x22000000\n\
+#define DFS_ADDRESS         0x23000000\n\
+#define DELTA_IP_ADDRESS    0x00000100\n\
+#define DELTA               16777216  // 16^6 = 0x1000000\n\
+\n\
+//#define DRAMSIM2\n\
+\n\
+// DEBUG FLAGS\n\
+#define NOC_DEBUG       0\n\
+#define LOCK_DEBUG      0\n\
+#define MEMORY_DEBUG    0\n\
+#define ROUTER_DEBUG    0\n\
+#define DFS_DEBUG       0\n\
+#define INTR_CTRL_DEBUG 0\n\
+\n\
+// ROUTER STATIC PARAMETERS\n\
+\n\
+// TLM2 PAYLOAD STATIC PARAMETERS\n\
+// Define the transaction direction\n\
+#define FORWARD  0\n\
+#define BACKWARD 1\n\
+\n\
+// TIMING STATIC PARAMETERS\n\
+#define TIME_MEMORY    100\n\
+#define TIME_DIR       20\n\
+#define TIME_NODE      6\n\
+#define TIME_ROUTER    20\n\
+#define TIME_LOCK      20\n\
+#define TIME_DFS       20\n\
+#define TIME_INTR_CTRL 20\n\
+\n\
+// DVFS STATIC PARAMETERS\n\
+// The definition of the power states depends on how the software (application) will explore this feature\n\
+// By default, the acPthread will use just the states LOW and HIGH. So, if you want to enable DVFS with this two \n\
+// power states, you must define the "id" that you want for each one of this states (based on the power table that you will use \n\
+// see processor/mips/ac_power_stats.H or processors/sparc/ac_power_stats.H to know more about this)\n\
+// In case you define different power states here, you must also update the acPthread library to use them (sw/acPthread.c).\n\
+\n\
+// But if you want to desable DFS (using just a single power state), use HIGH=LOW=0\n\
+\n\
+#define HIGH 3\n\
+#define LOW 0\n\
+#define INITIAL_PW_STATE 0\n\
+\n\
+//#define DFS_AUTO_SELECTION_CPU_RATE\n\
+//#define DFS_AUTO_SELECTION_ENERGY_STAMP\n\
+#define FIRST_DELTA_T 0.025   // 50*0,0005\n\
+#define DELTA_T 0.00025\n\
+#define N_DELTA_T 50\n\
+\n\
+'+ defines +'\
+\n\
+// NoC Hermes STATIC PARAMETERS - NOT IN USE IN THIS VERSION\n\
+#define LOCAL_MEM_SIZE  67108864\n\
+#define TEXTAREA	0x00d16f\n\
+#endif			'
+
+			file = open(self.ROOT + "/defines.h", 'w')
+			file.write(txt)
+			file.close()
 
 
 
@@ -2158,10 +2313,10 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 
 		defines = '\
 \n\
-\n/*#ifdef POWER_SIM\
+\n#ifdef POWER_SIM\
 \n  #undef POWER_SIM\
 \n  #define POWER_SIM "../../processors/'+self.folder+'/powersc" \
-\n#endif*/\
+\n#endif\
 \n\
 		'
 		var_cores = ''
@@ -2197,15 +2352,17 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 		for proc in self.processors:
 			defines += '\
 \n#include "../../processors/'+ self.folder +'/' + proc["name"] + '.H"\
-\n#define PROCESSOR_NAME' + str(i) + ' '+ proc["name"] +' '
+\n#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + ' '
 			if i == 1:
 				defines += '\
+\n//#define PROCESSOR_NAME ' + proc["name"] + '\
 \n#define PROCESSOR_NAME_parms '+ proc["name"] +'_parms\
 \n\
 				'
 			else:
 				defines += '\
-\n#define PROCESSOR_NAME'+str(i)+'_parms '+ proc["name"] +'_parms\
+\n//#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + '\
+\n#define PROCESSOR_NAME'+ str(i)+'_parms '+ proc["name"] +'_parms\
 \n\
 				'
 			var_cores += '\n  int N_CORES_'+str(i)+' = '+ str(self.n_cores[proc["name"]]) +';'
@@ -2302,6 +2459,9 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
 
 
+		
+		self.build_defines(defines)
+
 
 		txt = '\
 \n/********************************************************************************\
@@ -2342,7 +2502,6 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n#include "tlm_intr_ctrl.h"\
 \n//#include "tlm_diretorio.h"\
 \n\
-'+ defines +'\
 \n\
 \nusing user::tlm_memory;\
 \nusing user::tlm_router;\

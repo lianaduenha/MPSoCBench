@@ -17,9 +17,8 @@
  *
  *******************************************************************************/
 
-
 #ifndef _DEFINES_H 
-#define _DEFINES_H
+#define _DEFINES_H	
 
 // PLATFORM STATIC PARAMETERS
 #define LOCAL_FILE_MEASURES_NAME "local_report.txt"
@@ -79,7 +78,6 @@
 #define TIME_DFS       20
 #define TIME_INTR_CTRL 20
 
-
 // DVFS STATIC PARAMETERS
 // The definition of the power states depends on how the software (application) will explore this feature
 // By default, the acPthread will use just the states LOW and HIGH. So, if you want to enable DVFS with this two 
@@ -87,8 +85,7 @@
 // see processor/mips/ac_power_stats.H or processors/sparc/ac_power_stats.H to know more about this)
 // In case you define different power states here, you must also update the acPthread library to use them (sw/acPthread.c).
 
-// But if you want to desable DFS (using just a single power state), use HIGH=LOW=0 
-
+// But if you want to desable DFS (using just a single power state), use HIGH=LOW=0
 
 #define HIGH 3
 #define LOW 0
@@ -97,70 +94,27 @@
 //#define DFS_AUTO_SELECTION_CPU_RATE
 //#define DFS_AUTO_SELECTION_ENERGY_STAMP
 #define FIRST_DELTA_T 0.025   // 50*0,0005
-#define DELTA_T 0.00025     
+#define DELTA_T 0.00025
 #define N_DELTA_T 50
 
 
 
-
-
-
-/*#ifdef PROCMIPS300 
-    #ifdef POWER_SIM
-        #undef POWER_SIM
-        #define POWER_SIM "../../processors/mips/powersc" 
-    #endif
-    #include "../../processors/mips/mips300.H"
-    #define PROCESSOR_NAME300 mips300
-	#define PROCESSOR_NAME300_parms mips300_parms
-#endif 
-
-#ifdef PROCMIPS800 
-    #ifdef POWER_SIM
-        #undef POWER_SIM
-        #define POWER_SIM "../../processors/mips/powersc" 
-    #endif
-    #include "../../processors/mips/mips800.H"
-    #define PROCESSOR_NAME800 mips800
-    #define PROCESSOR_NAME800_parms mips800_parms
-#endif 
-*/
-
-/*
-
-#ifdef PROCSPARC
-    #ifdef POWER_SIM
-        #undef POWER_SIM
-        #define POWER_SIM "../../processors/sparc/powersc" 
-    #endif
-    #include "../../processors/sparc/sparc.H"
-	//#define PROCESSOR_NAME sparc
-	//#define PROCESSOR_NAME_parms sparc_parms
-#endif 
-
-#ifdef PROCPOWERPC
-    #ifdef POWER_SIM
-        #undef POWER_SIM
-        #define POWER_SIM "../../processors/powerpc/powersc" 
-    #endif
-    #include "../../processors/powerpc/powerpc.H"
-	#define PROCESSOR_NAME powerpc
-	#define PROCESSOR_NAME_parms powerpc_parms
-#endif 
-
-#ifdef PROCARM
-    #ifdef POWER_SIM
-        #undef POWER_SIM
-        #define POWER_SIM "../../processors/arm/powersc" 
-    #endif
-    #include "../../processors/arm/arm.H"
-	#define PROCESSOR_NAME arm
-	#define PROCESSOR_NAME_parms arm_parms
-#endif 
-*/
-
-
+#ifdef POWER_SIM
+  #undef POWER_SIM
+  #define POWER_SIM "../../processors/temp-mips1-mips2/powersc" 
+#endif
+		
+#include "../../processors/temp-mips1-mips2/mips1.H"
+#define PROCESSOR_NAME1 mips1 
+//#define PROCESSOR_NAME mips1
+#define PROCESSOR_NAME_parms mips1_parms
+				
+#include "../../processors/temp-mips1-mips2/mips2.H"
+#define PROCESSOR_NAME2 mips2 
+//#define PROCESSOR_NAME2 mips2
+#define PROCESSOR_NAME2_parms mips2_parms
+				
 // NoC Hermes STATIC PARAMETERS - NOT IN USE IN THIS VERSION
 #define LOCAL_MEM_SIZE  67108864
 #define TEXTAREA	0x00d16f
-#endif
+#endif			
