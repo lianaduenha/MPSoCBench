@@ -55,6 +55,8 @@
 #define CYCLES_PER_FREQUENCY_EXCHANGE 20000 // nanoseconds = or 20 micro seconds
 #define CYCLES_TO_RESTART 300
 
+#define POWER_SIM "../../processors/temp-mips1-mips2/powersc"
+
 //#define DEBUG
 
 class power_stats {

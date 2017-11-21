@@ -97,6 +97,7 @@
 #define DELTA_T 0.00025
 #define N_DELTA_T 50
 
+#ifdef PROCMIPS 
 
 
 #ifdef POWER_SIM
@@ -105,15 +106,16 @@
 #endif
 		
 #include "../../processors/temp-mips1-mips2/mips1.H"
-#define PROCESSOR_NAME1 mips1 
-//#define PROCESSOR_NAME mips1
+//#define PROCESSOR_NAME1 mips1 
+#define PROCESSOR_NAME mips1
 #define PROCESSOR_NAME_parms mips1_parms
 				
 #include "../../processors/temp-mips1-mips2/mips2.H"
-#define PROCESSOR_NAME2 mips2 
-//#define PROCESSOR_NAME2 mips2
+//#define PROCESSOR_NAME2 mips2 
+#define PROCESSOR_NAME2 mips2
 #define PROCESSOR_NAME2_parms mips2_parms
-				
+				#endif
+
 // NoC Hermes STATIC PARAMETERS - NOT IN USE IN THIS VERSION
 #define LOCAL_MEM_SIZE  67108864
 #define TEXTAREA	0x00d16f

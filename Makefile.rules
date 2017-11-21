@@ -90,7 +90,7 @@ het:
 
 	echo Creating rundir for $(RUNDIRNAME) ...
 	cd $(ROOT)/rundir ; mkdir -p $(RUNDIRNAME);
-	cd $(ROOT) ; $(MAKE) copy_het clean_het;
+	cd $(ROOT) ; $(MAKE) copy_het;
 	
 #------------------------------------------------------
 clean:

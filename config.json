@@ -69,7 +69,7 @@
     "platform":
     {
         "proc_base": "mips",
-        "interconection" : "router", 
+        "interconection" : "noc", 
         "timing": "lt", 
         "n_cores" :
         {
@@ -80,9 +80,9 @@
         "benchmark": "dijkstra",
 
         "metrics": {
-            "power" : false,
-            "mips1_csv": "acpower_table_mips_ASIC_freepdk45_400Mhz.csv",
-            "mips2_csv": "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
+            "power" : true,
+            "mips1_power_table": "acpower_table_mips_ASIC_freepdk45_250Mhz.csv",
+            "mips2_power_table": "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
         }
 
     }

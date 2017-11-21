@@ -168,18 +168,25 @@ class Controller:
 			l = txt.split('#ifdef POWER_SIM', 1)
 
 			
-			if self.metrics[proc["name"]+"_csv"] == "":
+			if self.metrics[proc["name"]+"_power_table"] == "":
 				csv = '\
 \n#ifdef POWER_SIM \
-\n#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv" \n' 
-
+\n#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv" \n\
+#include "arch_power_stats_' + proc["name"] + '.H"'
 			else:
 				csv = '\
 \n#ifdef POWER_SIM \
-\n#define POWER_TABLE_FILE "' + self.metrics[proc["name"]+"_csv"] + '" \n' 
+\n#define POWER_TABLE_FILE "' + self.metrics[proc["name"]+"_power_table"] + '" \n\
+#include "arch_power_stats_' + proc["name"] + '.H"' 
+			
+			r = l[1].split('#include "arch_power_stats.H"', 1)
 
+			pwr_st = "power_stats"
+			pwr_st_r = "power_stats_" + proc["name"]
 
-			txt = l[0] + csv + l[1]
+			t = r[1].replace(pwr_st, pwr_st_r)
+
+			txt = l[0] + csv + t
 
 			file = open(self.ROOT + "/processors/"+ self.folder +"/" + proc["name"] +".H", 'w')
 			file.write(txt)
@@ -189,12 +196,17 @@ class Controller:
 
 	def execution(self):
 
+		#os.system("make clean_het distclean_het run_het")
+
 		os.system("make clean_het distclean_het procs")
 
 		if self.power:
 			self.build_csv_processor()
 
 		os.system("make run_het")
+
+
+
 		# path = "rundir/" + plat_rundir
 		# print "Creating rundir for " + path[7:] + "..."
 		# # creates rundir for each platform
@@ -486,6 +498,32 @@ distclean: sim_clean\n\
 					new_name = file.replace(self.processor_base, proc["name"])
 					os.rename(dst +'/'+ file, dst +'/'+new_name)
 
+				if file == "arch_power_stats.H":
+					arq = open(dst +'/'+ file, 'r')
+					texto = arq.read()
+					arq.close()
+
+					pwr_st = "class power_stats"
+					pwr_st_r = "class power_stats_" + proc["name"]
+
+					texto = texto.replace(pwr_st, pwr_st_r)
+
+					pwr_st = "power_stats("
+					pwr_st_r = "power_stats_" + proc["name"] + "("
+
+					texto = texto.replace(pwr_st, pwr_st_r)
+
+
+					#texto = texto.replace(pwr_st.upper(), pwr_st_r.upper())
+
+					arq = open(dst +'/'+ file, 'w')
+					arq.write(texto)
+					arq.close()
+
+					new_name = "arch_power_stats_" + proc["name"] + ".H"
+					os.rename(dst +'/'+ file, dst +'/'+new_name)
+
+
 
 			#gera o arquivo de descricao do processador (ex; mips.ac mipsnoblock, mipsblock)
 			# sera uma descricao unica apartir de agora
@@ -588,6 +626,8 @@ Do you want to delete now? (Y / n)')
 		else:
 			pw_flag = ""
 			make = make + "export POWER_SIM_FLAG := \n" 
+		# pw_flag = "-pw"
+		# make = make + "export POWER_SIM_FLAG := \n" 
 
 		make = make + "export ACSIM_FLAGS := -abi -ndc " + pw_flag + "\n"; 
 		
@@ -602,10 +642,10 @@ Do you want to delete now? (Y / n)')
 		else: 
 			make = make + "export ENDIANESS := \n"
 
-		# make = make + "ifeq ($(PROCESSOR_BASE),arm)\nexport CFLAGS_AUX := -DPROCARM\nendif\n"
-		# make = make + "ifeq ($(PROCESSOR_BASE),mips)\nexport CFLAGS_AUX := -DPROCMIPS\nendif\n"
-		# make = make + "ifeq ($(PROCESSOR_BASE),sparc)\nexport CFLAGS_AUX := -DPROCSPARC\nendif\n"
-		# make = make + "ifeq ($(PROCESSOR_BASE),powerpc)\nexport CFLAGS_AUX := -DPROCPOWERPC\nendif\n"
+		make = make + "ifeq ($(PROCESSOR_BASE),arm)\nexport CFLAGS_AUX := -DPROCARM\nendif\n"
+		make = make + "ifeq ($(PROCESSOR_BASE),mips)\nexport CFLAGS_AUX := -DPROCMIPS\nendif\n"
+		make = make + "ifeq ($(PROCESSOR_BASE),sparc)\nexport CFLAGS_AUX := -DPROCSPARC\nendif\n"
+		make = make + "ifeq ($(PROCESSOR_BASE),powerpc)\nexport CFLAGS_AUX := -DPROCPOWERPC\nendif\n"
 		
 		make = make + "include Makefile.rules\n"
 		return make
@@ -742,7 +782,9 @@ Do you want to delete now? (Y / n)')
 #define DELTA_T 0.00025\n\
 #define N_DELTA_T 50\n\
 \n\
+#ifdef PROCMIPS \n\
 '+ defines +'\
+#endif\n\
 \n\
 // NoC Hermes STATIC PARAMETERS - NOT IN USE IN THIS VERSION\n\
 #define LOCAL_MEM_SIZE  67108864\n\
@@ -963,7 +1005,7 @@ Do you want to delete now? (Y / n)')
      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n\
 		'
 
-
+		#self.build_defines(defines)
 
 		txt = '\
 /********************************************************************************\n \
@@ -1624,7 +1666,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 			'
 			printing_statistics += '\
 \n\
-\n      for (i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ac_sim_stats.time = sc_simulation_time();\
 \n        procs_'+ str(i) +'[i]->ac_sim_stats.print();\
 \n      }\
@@ -1632,7 +1674,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 			'
 
 			connect_power +='\n\
-\n      /*for (i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n      /*for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ps.powersc_connect();\
 \n        procs_'+ str(i) +'[i]->IC.powersc_connect();\
 \n        procs_'+ str(i) +'[i]->DC.powersc_connect();\
@@ -1817,6 +1859,9 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 
 		connect_power += '\
 \n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
+		
+
+		#self.build_defines(defines)
 
 
 
@@ -2352,16 +2397,16 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 		for proc in self.processors:
 			defines += '\
 \n#include "../../processors/'+ self.folder +'/' + proc["name"] + '.H"\
-\n#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + ' '
+\n//#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + ' '
 			if i == 1:
 				defines += '\
-\n//#define PROCESSOR_NAME ' + proc["name"] + '\
+\n#define PROCESSOR_NAME ' + proc["name"] + '\
 \n#define PROCESSOR_NAME_parms '+ proc["name"] +'_parms\
 \n\
 				'
 			else:
 				defines += '\
-\n//#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + '\
+\n#define PROCESSOR_NAME' + str(i) + ' ' + proc["name"] + '\
 \n#define PROCESSOR_NAME'+ str(i)+'_parms '+ proc["name"] +'_parms\
 \n\
 				'
@@ -2423,24 +2468,27 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 			'
 			printing_statistics += '\
 \n\
-\n      for (i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ac_sim_stats.time = sc_simulation_time();\
 \n        procs_'+ str(i) +'[i]->ac_sim_stats.print();\
 \n      }\
 \n\
 			'
 
+			
 			connect_power +='\n\
-\n      /*for (i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ps.powersc_connect();\
-\n        procs_'+ str(i) +'[i]->IC.powersc_connect();\
-\n        procs_'+ str(i) +'[i]->DC.powersc_connect();\
-\n        }*/\
+\n        //procs_'+ str(i) +'[i]->IC.powersc_connect();\
+\n        //procs_'+ str(i) +'[i]->DC.powersc_connect();\
+\n      }\
+\n		procs_'+ str(i) +'[N_CORES_'+ str(i) +' - 1]->ps.report();\
 \n \
 			'
+
 			connect_power_info += '\
 \n\
-\n      for (i = 0; i < N_CORES_'+ str(i) +'; i++)\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++)\
 \n          d += procs_'+ str(i) +'[i]->ps.getEnergyPerCore();\
 \n\
 			'
@@ -2455,7 +2503,11 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 
 			i += 1
 
-		connect_power += '\
+		if self.power:
+			connect_power += '\
+\n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
+		else:
+			connect_power += '\
 \n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
 
 
@@ -2498,7 +2550,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n#include "tlm_memory.h"\
 \n#include "tlm_router.h"\
 \n#include "tlm_lock.h"\
-\n#include "tlm_dfs.h"\
+\n//#include "tlm_dfs.h"\
 \n#include "tlm_intr_ctrl.h"\
 \n//#include "tlm_diretorio.h"\
 \n\
@@ -2510,7 +2562,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n//using user::tlm_diretorio;\
 \n\
 \n#ifdef POWER_SIM\
-\nusing user::tlm_dfs;\
+\n//using user::tlm_dfs;\
 \n#endif\
 \n\
 \n// Global variables\
@@ -2557,7 +2609,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n  tlm_intr_ctrl intr_ctrl("intr_ctrl", N_WORKERS);\
 \n  //tlm_diretorio dir("dir");\
 \n  #ifdef POWER_SIM\
-\n    //tlm_dfs dfs("dfs", N_WORKERS, processors); // dfs\
+\n    //tlm_dfs dfs("dfs", N_CORES_1, &procs_1); // dfs\
 \n  #endif\
 \n\
 \n  // Binding ports\
@@ -2599,21 +2651,21 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n    // Beggining of simulation\
 \n\
 \n    sc_start();\
-'+ print_s +'\
+	  '+ print_s +'\
 \n    // Printing statistics\
 \n    #ifdef AC_STATS\
-'+ printing_statistics +'\
+		'+ printing_statistics +'\
 \n    #endif\
 \n\
-\n    #ifdef POWER_SIM\
-'+ connect_power + '\
+\n    #ifdef POWER_SIM\n\
+		'+connect_power+'\
 \n    #endif\
 \n\
 \n    #ifdef POWER_SIM\
 \n      /*double d = 0;\
 \n\
 \n      // Connect Power Information from ArchC with PowerSC\
-'+connect_power_info+'\
+		'+connect_power_info+'\
 \n\
 \n      printf("\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ", d * 0.000000001);\
 \n      fprintf(local_time_measures, "\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ", d * 0.000000001);\
