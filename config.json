@@ -69,7 +69,7 @@
     "platform":
     {
         "proc_base": "mips",
-        "interconection" : "noc", 
+        "interconection" : "router", 
         "timing": "lt", 
         "n_cores" :
         {

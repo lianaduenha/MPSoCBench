@@ -1,4 +1,9 @@
-#ifdef POWER_SIM
+#ifndef ARCHC_POWER_STATS
+#define ARCHC_POWER_STATS
+
+
+//#ifdef POWER_SIM
+
 #include <powersc.h>
 #include <systemc>
 
@@ -21,10 +26,10 @@
 //#define POWER_TABLE_FILE "acpower_table_mips_xc5vlx50t_100Mhz.csv"
 
 /**** Power Tables using ASICS *****/
-//#define POWER_TABLE_FILE "ac_power_table_mips_ASIC_freepdk45_50Mhz.csv"
-//#define POWER_TABLE_FILE "ac_power_table_mips_ASIC_freepdk45_125Mhz.csv"
-//#define POWER_TABLE_FILE "ac_power_table_mips_ASIC_freepdk45_250Mhz.csv"
-//#define POWER_TABLE_FILE "ac_power_table_mips_ASIC_freepdk45_400Mhz.csv"
+//#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50Mhz.csv"
+//#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_125Mhz.csv"
+//#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_250Mhz.csv"
+#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
 
 /**** Power Tables with multiples profiles (Useful for DVFS control) *****/
 // #define POWER_TABLE_FILE "acpower_table_mips_cycloneV_25Mhz_100Mhz.csv"
@@ -55,7 +60,7 @@
 #define CYCLES_PER_FREQUENCY_EXCHANGE 20000 // nanoseconds = or 20 micro seconds
 #define CYCLES_TO_RESTART 300
 
-#define POWER_SIM "../../processors/temp-mips1-mips2/powersc"
+//#define POWER_SIM "../../processors/temp-mips1-mips2/powersc"
 
 //#define DEBUG
 
@@ -677,5 +682,6 @@ class power_stats {
 		}
 
 };
-#endif
+//#endif
 
+#endif

@@ -170,21 +170,21 @@ class Controller:
 			
 			if self.metrics[proc["name"]+"_power_table"] == "":
 				csv = '\
-\n#ifdef POWER_SIM \
-\n#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv" \n\
-#include "arch_power_stats_' + proc["name"] + '.H"'
+\n // #ifdef POWER_SIM \
+\n // #define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv" \n\
+#include "arch_power_stats.H"'
 			else:
 				csv = '\
-\n#ifdef POWER_SIM \
-\n#define POWER_TABLE_FILE "' + self.metrics[proc["name"]+"_power_table"] + '" \n\
-#include "arch_power_stats_' + proc["name"] + '.H"' 
+\n //#ifdef POWER_SIM \
+\n //#define POWER_TABLE_FILE "' + self.metrics[proc["name"]+"_power_table"] + '" \n\
+#include "arch_power_stats.H"' 
 			
 			r = l[1].split('#include "arch_power_stats.H"', 1)
 
-			pwr_st = "power_stats"
-			pwr_st_r = "power_stats_" + proc["name"]
+			#pwr_st = "power_stats"
+			#pwr_st_r = "power_stats_" + proc["name"]
 
-			t = r[1].replace(pwr_st, pwr_st_r)
+			#t = r[1].replace(pwr_st, pwr_st_r)
 
 			txt = l[0] + csv + t
 
@@ -200,8 +200,8 @@ class Controller:
 
 		os.system("make clean_het distclean_het procs")
 
-		if self.power:
-			self.build_csv_processor()
+		#if self.power:
+			#self.build_csv_processor()
 
 		os.system("make run_het")
 
@@ -361,6 +361,14 @@ ac_icache IC("'+ cache["associativity"] +'", \
 		SRCS 	= 'main.cpp $(ACSRCS) '
 		CPPs	= ''
 		COPY 	= ''
+		pwrsc = ''
+		cfl = ''
+
+		if self.power:
+			pwrsc = '`pkg-config --libs powersc`'
+			cfl = ' -DPOWER_SIM=\\"$(PWD)/powersc\\"'
+		else:
+			pwrsc = ''
 
 		for proc in procs:
 
@@ -384,14 +392,14 @@ ac_icache IC("'+ cache["associativity"] +'", \
 INC_DIR := -I. `pkg-config --cflags systemc` `pkg-config --cflags archc` `pkg-config --cflags tlm`\n\
 LIB_SYSTEMC := `pkg-config --libs systemc`\n\
 LIB_ARCHC := `pkg-config --libs archc`\n\
-LIB_POWERSC :=\n\
+LIB_POWERSC :='+pwrsc+'\n\
 LIB_DWARF :=\n\
 LIBS := $(LIB_SYSTEMC) $(LIB_ARCHC) $(LIB_POWERSC) $(LIB_DWARF) -lm $(EXTRA_LIBS)\n\
 CC :=   g++\n\
 OPT :=   -O3\n\
 DEBUG :=   -g\n\
 OTHER := -std=c++11  -DAC_GUEST_BIG_ENDIAN  -Wno-deprecated\n\
-CFLAGS := $(DEBUG) $(OPT) $(OTHER)\n\
+CFLAGS := $(DEBUG) $(OPT) $(OTHER) '+cfl+'\n\
 \n\
 TARGET := ' +self.processor_base +'\n\
 \n\
@@ -498,30 +506,30 @@ distclean: sim_clean\n\
 					new_name = file.replace(self.processor_base, proc["name"])
 					os.rename(dst +'/'+ file, dst +'/'+new_name)
 
-				if file == "arch_power_stats.H":
-					arq = open(dst +'/'+ file, 'r')
-					texto = arq.read()
-					arq.close()
+				# if file == "arch_power_stats.H":
+				# 	arq = open(dst +'/'+ file, 'r')
+				# 	texto = arq.read()
+				# 	arq.close()
 
-					pwr_st = "class power_stats"
-					pwr_st_r = "class power_stats_" + proc["name"]
+				# 	pwr_st = "class power_stats"
+				# 	pwr_st_r = "class power_stats_" + proc["name"]
 
-					texto = texto.replace(pwr_st, pwr_st_r)
+				# 	texto = texto.replace(pwr_st, pwr_st_r)
 
-					pwr_st = "power_stats("
-					pwr_st_r = "power_stats_" + proc["name"] + "("
+				# 	pwr_st = "power_stats("
+				# 	pwr_st_r = "power_stats_" + proc["name"] + "("
 
-					texto = texto.replace(pwr_st, pwr_st_r)
+				# 	texto = texto.replace(pwr_st, pwr_st_r)
 
 
-					#texto = texto.replace(pwr_st.upper(), pwr_st_r.upper())
+				# 	#texto = texto.replace(pwr_st.upper(), pwr_st_r.upper())
 
-					arq = open(dst +'/'+ file, 'w')
-					arq.write(texto)
-					arq.close()
+				# 	arq = open(dst +'/'+ file, 'w')
+				# 	arq.write(texto)
+				# 	arq.close()
 
-					new_name = "arch_power_stats_" + proc["name"] + ".H"
-					os.rename(dst +'/'+ file, dst +'/'+new_name)
+				# 	new_name = "arch_power_stats_" + proc["name"] + ".H"
+				# 	os.rename(dst +'/'+ file, dst +'/'+new_name)
 
 
 
@@ -2479,10 +2487,10 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 			connect_power +='\n\
 \n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ps.powersc_connect();\
-\n        //procs_'+ str(i) +'[i]->IC.powersc_connect();\
+\n        procs_'+ str(i) +'[i]->IC.powersc_connect();\
 \n        //procs_'+ str(i) +'[i]->DC.powersc_connect();\
 \n      }\
-\n		procs_'+ str(i) +'[N_CORES_'+ str(i) +' - 1]->ps.report();\
+\n		//procs_'+ str(i) +'[N_CORES_'+ str(i) +' - 1]->ps.report();\
 \n \
 			'
 
@@ -2508,7 +2516,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
 		else:
 			connect_power += '\
-\n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
+\n      procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
 
 
 		
