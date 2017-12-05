@@ -50,7 +50,7 @@ designs.
 #include "routing_table.h"
 #include "tlm_utils/simple_initiator_socket.h"
 #include "tlm_utils/simple_target_socket.h"
-#include "local_dfs.h"
+//#include "local_dfs.h"
 #include "../../defines.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ using user::routing_table;
 using namespace sc_core;
 
 #ifdef POWER_SIM
-using user::local_dfs;
+//using user::local_dfs;
 #endif
 
 namespace user {
@@ -88,8 +88,8 @@ public:
   ~wrapper_master_slave_to_noc() {
 
 #ifdef POWER_SIM
-    if (dfs != NULL)
-      delete dfs;
+    /*if (dfs != NULL)
+      delete dfs;*/
 #endif
   }
 
@@ -114,8 +114,8 @@ public:
                                      sc_core::sc_time &);
 
 #ifdef POWER_SIM
-  local_dfs *dfs;
-  void initDFS(PROCESSOR_NAME *proc);
+  /*local_dfs *dfs;
+  void initDFS(PROCESSOR_NAME *proc);*/
 #endif
 
   static int counterDFS;

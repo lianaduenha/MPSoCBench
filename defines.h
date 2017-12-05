@@ -106,13 +106,11 @@
 #endif
 		
 #include "../../processors/temp-mips1-mips2/mips1.H"
-//#define PROCESSOR_NAME1 mips1 
-#define PROCESSOR_NAME mips1
+#define PROCESSOR_NAME1 mips1 
 #define PROCESSOR_NAME_parms mips1_parms
 				
 #include "../../processors/temp-mips1-mips2/mips2.H"
-//#define PROCESSOR_NAME2 mips2 
-#define PROCESSOR_NAME2 mips2
+#define PROCESSOR_NAME2 mips2 
 #define PROCESSOR_NAME2_parms mips2_parms
 				#endif
 

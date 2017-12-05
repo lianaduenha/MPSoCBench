@@ -17,11 +17,11 @@
 
             "IC_cache" :
             {
-                "associativity": "2w",
-                "number_of_blocks": 128,
+                "associativity": "4w",
+                "number_of_blocks": 64,
                 "block_size" : 32, 
-                "write_policy" :"wb",
-                "replacement_policy" : "random" 
+                "write_policy" :"wt",
+                "replacement_policy" : "random"
             },
 
             "DC_cache" :
@@ -33,26 +33,27 @@
                 "replacement_policy" : "random" 
             }
         },
-
         {
+
             "name" : "mips2",
             "isa" : "mips",
             "frequency" : 400,
             "fetchsize" : 32,
             "wordsize" :32,
-            "memsize" : 512,
+            "memsize" : 512,            
             "endianness": "big",
 
             "regbank_1" : 32,
             "regbank_2" : 0,
+            
 
             "IC_cache" :
             {
-                "associativity": "2w",
-                "number_of_blocks": 128,
+                "associativity": "4w",
+                "number_of_blocks": 64,
                 "block_size" : 32, 
-                "write_policy" :"wb",
-                "replacement_policy" : "fifo" 
+                "write_policy" :"wt",
+                "replacement_policy" : "random"
             },
 
             "DC_cache" :
@@ -61,7 +62,7 @@
                 "number_of_blocks": 64,
                 "block_size" : 32, 
                 "write_policy" :"wt",
-                "replacement_policy" : "lru" 
+                "replacement_policy" : "random" 
             }
         }
     ],
@@ -69,12 +70,14 @@
     "platform":
     {
         "proc_base": "mips",
-        "interconection" : "router", 
-        "timing": "lt", 
+        "interconection" : "noc", 
+        "timing": "at", 
         "n_cores" :
         {
             "mips1": 2,
             "mips2": 2
+
+
         },
 
         "benchmark": "dijkstra",

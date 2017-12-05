@@ -43,6 +43,8 @@ class Controller:
 	name_plat 		= ""
 	clean 			= True
 	metrics			= ""
+	keys			= 0
+
 
 
 
@@ -67,6 +69,7 @@ class Controller:
 		for key in self.n_cores:
 			# pega conteudo da chave ou seja o inteiro em si
 			# que eh a qtd de processadores com essa chave
+			self.keys += 1
 			self.tot_n_cores += int(self.n_cores[key]) 
 
 	def set_rundirname(self):
@@ -129,7 +132,8 @@ class Controller:
 
 
 	def build_platform(self):
-		if len(self.n_cores) > 1:
+
+		if len(self.n_cores) > 0:
 			if self.interconection + "." + self.timing == "router.lt":
 				txt = self.build_platform_het_router_lt()
 				dst = self.ROOT + "/platforms/" + "temp."+ self.name_plat +"/"
@@ -506,33 +510,6 @@ distclean: sim_clean\n\
 					new_name = file.replace(self.processor_base, proc["name"])
 					os.rename(dst +'/'+ file, dst +'/'+new_name)
 
-				# if file == "arch_power_stats.H":
-				# 	arq = open(dst +'/'+ file, 'r')
-				# 	texto = arq.read()
-				# 	arq.close()
-
-				# 	pwr_st = "class power_stats"
-				# 	pwr_st_r = "class power_stats_" + proc["name"]
-
-				# 	texto = texto.replace(pwr_st, pwr_st_r)
-
-				# 	pwr_st = "power_stats("
-				# 	pwr_st_r = "power_stats_" + proc["name"] + "("
-
-				# 	texto = texto.replace(pwr_st, pwr_st_r)
-
-
-				# 	#texto = texto.replace(pwr_st.upper(), pwr_st_r.upper())
-
-				# 	arq = open(dst +'/'+ file, 'w')
-				# 	arq.write(texto)
-				# 	arq.close()
-
-				# 	new_name = "arch_power_stats_" + proc["name"] + ".H"
-				# 	os.rename(dst +'/'+ file, dst +'/'+new_name)
-
-
-
 			#gera o arquivo de descricao do processador (ex; mips.ac mipsnoblock, mipsblock)
 			# sera uma descricao unica apartir de agora
 
@@ -545,47 +522,48 @@ distclean: sim_clean\n\
 
 		src = os.path.join(self.ROOT, 'processors/' + path_all_processors)	
 
-		if os.path.exists(src):
+# 		if os.path.exists(src):
 			
-			while True:
-				#op = sys.stdin.readline()
+# 			while True:
+# 				#op = sys.stdin.readline()
 
-				op = input('\
-You have decided not to delete temporary files and folders \n\
-from the last simulation. You need to delete these files. \n\
-Do you want to delete now? (Y / n)')
+# 				op = input('\
+# You have decided not to delete temporary files and folders \n\
+# from the last simulation. You need to delete these files. \n\
+# Do you want to delete now? (Y / n)')
 
-				if op == 'Y':
-					for folder in os.listdir(self.ROOT+"/platforms/"):
-						if folder.startswith("temp."):
-							os.system("rm -R " + self.ROOT+"/platforms/"+ folder)
+# 				if op == 'Y':
+# 					for folder in os.listdir(self.ROOT+"/platforms/"):
+# 						if folder.startswith("temp."):
+# 							os.system("rm -R " + self.ROOT+"/platforms/"+ folder)
 
-					os.system("rm -R " + src)
-					break
-				elif op == 'n':
-					#remove as pastas de processadores temporario
-					for proc in self.processors:
-						if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
-							os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
-					quit()
-				else:
-					print("Press (Y/n)")
+# 					os.system("rm -R " + src)
+# 					break
+# 				elif op == 'n':
+# 					#remove as pastas de processadores temporario
+# 					for proc in self.processors:
+# 						if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
+# 							os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
+# 					quit()
+# 				else:
+# 					print("Press (Y/n)")
 
-		
-		os.makedirs(src)
-		flag = 0
-		for d in srcs:
-			for file in os.listdir(d):
-				if file != "powersc":
-					shutil.copy2(d+'/'+file, src)
+		if self.keys > 1:
+			os.makedirs(src)		
+			
+			flag = 0
+			for d in srcs:
+				for file in os.listdir(d):
+					if file != "powersc":
+						shutil.copy2(d+'/'+file, src)
 
 
-		os.system("cp -R " + a + "/powersc/ " + src + "/powersc")
+			os.system("cp -R " + a + "/powersc/ " + src + "/powersc")
 
-		#remove as pastas de processadores temporario
-		for proc in self.processors:
-			if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
-				os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
+			#remove as pastas de processadores temporario
+			for proc in self.processors:
+				if os.path.exists(self.ROOT+"/processors/temp-" + proc["name"]):
+					os.system("rm -R " + self.ROOT+"/processors/temp-" + proc["name"])
 
 		self.set_rundirname()
 		
@@ -854,10 +832,10 @@ Do you want to delete now? (Y / n)')
 		i = 1
 		defines = '\
 \n\
-\n/*#ifdef POWER_SIM\
+\n#ifdef POWER_SIM\
 \n  #undef POWER_SIM\
 \n  #define POWER_SIM "../../processors/'+self.folder+'/powersc" \
-\n#endif*/\
+\n#endif\
 \n\
 		'
 		var_cores = ''
@@ -906,8 +884,36 @@ Do you want to delete now? (Y / n)')
 				'
 			var_cores += '\n  int N_CORES_'+str(i)+' = '+ str(self.n_cores[proc["name"]]) +';'
 
+
+			if self.power:
+				if self.metrics[proc["name"] +"_power_table"] == "":
+					POWER_TABLE_FILE = "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv"
+
+				else:
+					POWER_TABLE_FILE = self.metrics[proc["name"] +"_power_table"]
+			else:
+				POWER_TABLE_FILE = ""
+
 			vectors += '\n\
-  vector<' + proc["name"] +' *> procs_'+ str(i) +';\n\
+\n  vector<' + proc["name"] +' *> procs_'+ str(i) +';\
+\n\
+\n  for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n    char name[1000] = "proc";\
+\n	  strcat(name, "_'+ proc["name"] +'_");\
+\n    char number_str[3];\
+\n    sprintf(number_str, "%d", id);\
+\n    strcat(name, number_str);\
+\n    strcat(name, "@'+POWER_TABLE_FILE+'");\
+\n    procs_'+ str(i) +'.push_back(new ' + proc["name"] +'(name, id));\
+\n 	  (procs_'+ str(i) +'[i]->MEM_mport).setProcId(id);\n\
+\n    id++;\
+\n  }\
+\n\
+				'
+
+
+			vectors += '\n\
+/*  vector<' + proc["name"] +' *> procs_'+ str(i) +';\n\
 \n\
   for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\n\
     char name[10] = "proc";\n\
@@ -917,7 +923,7 @@ Do you want to delete now? (Y / n)')
     procs_'+ str(i) +'.push_back(new ' + proc["name"] +'(name, id));\n\
     (procs_'+ str(i) +'[i]->MEM_mport).setProcId(id);\n\
     id++;\n\
-  }\n			'
+  }\n	*/		'
 
 
 
@@ -984,16 +990,16 @@ Do you want to delete now? (Y / n)')
 			'
 
 			connect_power +='\n\
-\n      /*for (i = 0; i < N_CORES_'+ str(i) +'; i++) {\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
 \n        procs_'+ str(i) +'[i]->ps.powersc_connect();\
 \n        procs_'+ str(i) +'[i]->IC.powersc_connect();\
-\n        procs_'+ str(i) +'[i]->DC.powersc_connect();\
-\n        }*/\
+\n        //procs_'+ str(i) +'[i]->DC.powersc_connect();\
+\n        }\
 \n \
 			'
 			connect_power_info += '\
 \n\
-\n      for (i = 0; i < N_CORES_'+ str(i) +'; i++)\
+\n      for (int i = 0; i < N_CORES_'+ str(i) +'; i++)\
 \n          d += procs_'+ str(i) +'[i]->ps.getEnergyPerCore();\
 \n\
 			'
@@ -1013,7 +1019,7 @@ Do you want to delete now? (Y / n)')
      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n\
 		'
 
-		#self.build_defines(defines)
+		self.build_defines(defines)
 
 		txt = '\
 /********************************************************************************\n \
@@ -1045,22 +1051,19 @@ const char *archc_options = "";\n\
 #include <stdio.h>\n\
 #include <string.h>\n\
 \n\
-//#include "../../defines.h"\n\
+#include "../../defines.h"\n\
 #define SC_INCLUDE_DYNAMIC_PROCESSES\n\
 \n\
 #include "tlm_memory.h"\n\
 #include "tlm_noc.h"\n\
 #include "tlm_lock.h"\n\
 #include "wrappers_noc.h"\n\
-#include "tlm_dfs.h"\n\
+//#include "tlm_dfs.h"\n\
 \n\
 #include "ac_utils.H"\n\
 #include "ac_tlm_protocol.H"\n\
 #include "tlm_intr_ctrl.h"\n\
 //#include "tlm_diretorio.h"\n\
-\n\
-'+ defines +'\
-\n\
 //#define AC_DEBUG\n\
 using user::tlm_memory;\n\
 using user::tlm_noc;\n\
@@ -1070,7 +1073,7 @@ using user::tlm_intr_ctrl;\n\
 //using user::tlm_diretorio;\n\
 \n\
 #ifdef POWER_SIM\n\
-using user::tlm_dfs;\n\
+//using user::tlm_dfs;\n\
 #endif\n\
 \n\
 // Global variables\n\
@@ -1318,7 +1321,7 @@ int sc_main(int ac, char *av[]) {\n\
 #endif\n\
 \n\
 #ifdef POWER_SIM\n\
-  /*global_time_measures = fopen(GLOBAL_FILE_MEASURES_NAME, "a");\n\
+  global_time_measures = fopen(GLOBAL_FILE_MEASURES_NAME, "a");\n\
   local_time_measures = fopen(LOCAL_FILE_MEASURES_NAME, "a");\n\
   double d = 0;\n\
   \n\
@@ -1330,7 +1333,7 @@ int sc_main(int ac, char *av[]) {\n\
           d * 0.000000001);\n\
 \n\
   fclose(global_time_measures);\n\
-  fclose(local_time_measures);*/\n\
+  fclose(local_time_measures);\n\
 #endif\n\
 \n\
   // Checking the status\n\
@@ -2399,6 +2402,8 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 		check_status = '\
 \n    // Checking the status\
 \n    bool status;'
+		
+
 
 
 
@@ -2420,19 +2425,31 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 				'
 			var_cores += '\n  int N_CORES_'+str(i)+' = '+ str(self.n_cores[proc["name"]]) +';'
 
+			if self.power:
+				if self.metrics[proc["name"] +"_power_table"] == "":
+					POWER_TABLE_FILE = "acpower_table_mips_ASIC_freepdk45_50_125_250_400Mhz.csv"
+
+				else:
+					POWER_TABLE_FILE = self.metrics[proc["name"] +"_power_table"]
+			else:
+				POWER_TABLE_FILE = ""
+
 			vectors += '\n\
 \n  vector<' + proc["name"] +' *> procs_'+ str(i) +';\
 \n\
 \n  for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
-\n    char name[10] = "proc";\
+\n    char name[1000] = "proc";\
+\n	  strcat(name, "_'+ proc["name"] +'_");\
 \n    char number_str[3];\
 \n    sprintf(number_str, "%d", id);\
 \n    strcat(name, number_str);\
+\n    strcat(name, "@'+POWER_TABLE_FILE+'");\
 \n    procs_'+ str(i) +'.push_back(new ' + proc["name"] +'(name, id));\
 \n    id++;\
 \n  }\
 \n\
-			'
+				'
+
 
 			memports += '\n\
 \n  for (int i = 0; i < N_CORES_'+ str(i) +'; i++) {\
@@ -2513,7 +2530,7 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 
 		if self.power:
 			connect_power += '\
-\n      //procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
+\n      procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
 		else:
 			connect_power += '\
 \n      procs_'+ str(i-1) +'[N_CORES_'+ str(i-1) +' - 1]->ps.report();\n'
@@ -2660,6 +2677,8 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n\
 \n    sc_start();\
 	  '+ print_s +'\
+\n   // Endding the time measurement\
+\n    report_end();\
 \n    // Printing statistics\
 \n    #ifdef AC_STATS\
 		'+ printing_statistics +'\
@@ -2670,14 +2689,14 @@ template<class type_core> void load_elf(type_core &proc, tlm_memory &mem, char *
 \n    #endif\
 \n\
 \n    #ifdef POWER_SIM\
-\n      /*double d = 0;\
+\n      double d = 0;\
 \n\
 \n      // Connect Power Information from ArchC with PowerSC\
 		'+connect_power_info+'\
 \n\
 \n      printf("\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ", d * 0.000000001);\
 \n      fprintf(local_time_measures, "\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ", d * 0.000000001);\
-\n      fprintf(global_time_measures, "\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ",d * 0.000000001);*/\
+\n      fprintf(global_time_measures, "\\n\\nTOTAL ENERGY (ALL CORES): %.10f J\\n\\n ",d * 0.000000001);\
 \n    #endif\
 \n\
 '+ check_status +'\

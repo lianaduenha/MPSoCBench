@@ -1,6 +1,6 @@
 #ifdef POWER_SIM
 
-#ifndef LOCAL_DFS_H_
+/*#ifndef LOCAL_DFS_H_
 #define LOCAL_DFS_H_
 #include <systemc>
 #include "ac_module.H"
@@ -45,7 +45,7 @@ public:
 #endif
 
 private:
-  PROCESSOR_NAME *proc;
+  //PROCESSOR_NAME *proc;
   int numberOfStates;
   int *listOfStates;
 
@@ -74,6 +74,6 @@ private:
 };
 };
 
-#endif // LOCAL_DFS_H_
+#endif // LOCAL_DFS_H_*/
 
 #endif

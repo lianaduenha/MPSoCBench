@@ -29,7 +29,7 @@
 //#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_50Mhz.csv"
 //#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_125Mhz.csv"
 //#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_250Mhz.csv"
-#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
+//#define POWER_TABLE_FILE "acpower_table_mips_ASIC_freepdk45_400Mhz.csv"
 
 /**** Power Tables with multiples profiles (Useful for DVFS control) *****/
 // #define POWER_TABLE_FILE "acpower_table_mips_cycloneV_25Mhz_100Mhz.csv"
@@ -132,16 +132,55 @@ class power_stats {
 		int contador_debug;
 		#endif
 
+		char* POWER_TABLE_FILE;
+		char* proc_name;
+
+		
+
 
 
 
 	public:
 		psc_cell_power_info psc_info;
 
+		const vector<string> explode(const string& s, const char& c)
+		{
+			string buff{""};
+			vector<string> v;
+			
+			for(auto n:s)
+			{
+				if(n != c) buff+=n; else
+				if(n == c && buff != "") { v.push_back(buff); buff = ""; }
+			}
+			if(buff != "") v.push_back(buff);
+			
+			return v;
+		}
+
+		int size_proc(const char * str)
+		{
+		    int Size = 0;
+		    while (str[Size] != '\0') Size++;
+		    return Size;
+		}
+
 		// Constructor
-		power_stats(const char* proc_name): psc_info(proc_name, "Processor")
+		power_stats(const char* p_name): psc_info(p_name, "Processor")
 		{
     		PSC_NUM_FIRST_SAMPLES(0x7FFFFFFF);
+    		int i = 0, flag = 0, j = 0;
+    		vector<string> v{explode(p_name, '@')};
+
+			POWER_TABLE_FILE = new char[size_proc(p_name)];
+			proc_name = new char[size_proc(p_name)];
+			memcpy(proc_name, v[0].c_str(), size_proc(p_name));
+			memcpy(POWER_TABLE_FILE, v[1].c_str(), size_proc(p_name));
+			
+			//cout << '\n' << (void *) POWER_TABLE_FILE << '\n';
+
+			printf("\n%s:%s\n", proc_name, POWER_TABLE_FILE);
+
 			init(POWER_TABLE_FILE);
 			
 			/*Initialize power state using profile 0*/
@@ -217,6 +256,7 @@ class power_stats {
 			#endif
 		}
 
+		
 		double get_power() {
 			return psc_info.get_power();
 		}

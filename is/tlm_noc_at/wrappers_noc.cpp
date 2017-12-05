@@ -40,7 +40,7 @@ wrapper_master_slave_to_noc::wrapper_master_slave_to_noc()
       sc_module((sc_module_name)module_name), LOCAL_init_socket(),
       LOCAL_target_socket(), NODE_init_socket(), NODE_target_socket() {
 #ifdef POWER_SIM
-  dfs = NULL;
+  //dfs = NULL;
 #endif
 
   /* NUMBER OF HOPS */
@@ -67,7 +67,7 @@ wrapper_master_slave_to_noc::wrapper_master_slave_to_noc(
       NODE_init_socket(), NODE_target_socket() {
 
 #ifdef POWER_SIM
-  dfs = NULL;
+  //dfs = NULL;
 #endif
   /* NUMBER OF HOPS */
   numberOfHops = 0;
@@ -163,9 +163,9 @@ wrapper_master_slave_to_noc::nb_transport_fw(ac_tlm2_payload &payload,
     }
 
 #ifdef POWER_SIM
-#ifdef DFS_AUTO_SELECTION_CPU_RATE
+/*#ifdef DFS_AUTO_SELECTION_CPU_RATE
     dfs->noteFwTime();
-#endif
+#endif*/
 #endif
 
   } else {
@@ -279,13 +279,13 @@ wrapper_master_slave_to_noc::nb_transport_bw(ac_tlm2_payload &payload,
     phase = tlm::END_RESP;
 
 #ifdef POWER_SIM
-#ifdef DFS_AUTO_SELECTION_CPU_RATE
+/*#ifdef DFS_AUTO_SELECTION_CPU_RATE
     dfs->noteBwTime();
     dfs->autoSelectionCPUrate();
 #endif
 #ifdef DFS_AUTO_SELECTION_ENERGY_STAMP
     dfs->autoSelectionEnergyStamp();
-#endif
+#endif*/
 #endif
 
     return status;
@@ -293,12 +293,12 @@ wrapper_master_slave_to_noc::nb_transport_bw(ac_tlm2_payload &payload,
 }
 
 #ifdef POWER_SIM
-void wrapper_master_slave_to_noc::initDFS(PROCESSOR_NAME *proc) {
+/*void wrapper_master_slave_to_noc::initDFS(PROCESSOR_NAME *proc) {
 
   char name[7];
   sprintf(name, "%d", wrapper_master_slave_to_noc::counterDFS++);
   strcat(name, "_dfs");
 
   dfs = new local_dfs(proc, name);
-}
+}*/
 #endif

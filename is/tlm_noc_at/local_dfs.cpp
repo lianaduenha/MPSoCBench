@@ -1,6 +1,6 @@
 #ifdef POWER_SIM
 
-#include "local_dfs.h"
+/*#include "local_dfs.h"
 #include <tlm.h>
 
 #define measures 1
@@ -202,7 +202,7 @@ void local_dfs::autoSelectionEnergyStamp() {
       setPowerState(actualState);
       (proc->ps).initialize_energy_stamp();
 
-      lastTimeES = t; /*****/
+      lastTimeES = t; 
     }
   } else // the elaboration phase is over
   {
@@ -377,5 +377,5 @@ void local_dfs::readBounds() {
   }
 }
 
-#endif
+#endif*/
 #endif

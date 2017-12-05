@@ -5,14 +5,14 @@ export PROCESSOR_BASE := mips
 export PROCESSOR := mips1 mips2 
 export NUMPROCESSORS := 4
 export SOFTWARE := dijkstra
-export PLATFORM := platform.router.het.lt
+export PLATFORM := platform.noc.het.at
 export CROSS := mips-newlib-elf-gcc
 export POWER_SIM_FLAG := -DPOWER_SIM=\"\"
 export ACSIM_FLAGS := -abi -ndc  -pw
-export WAIT_TRANSPORT_FLAG := 
-export TRANSPORT := block
+export WAIT_TRANSPORT_FLAG := -DWAIT_TRANSPORT
+export TRANSPORT := nonblock
 export MEM_SIZE_DEFAULT := -DMEM_SIZE=536870912
-export RUNDIRNAME := mips1.mips2.router.lt.4.dijkstra
+export RUNDIRNAME := mips1.mips2.noc.at.4.dijkstra
 export ENDIANESS := -DAC_GUEST_BIG_ENDIAN
 ifeq ($(PROCESSOR_BASE),arm)
 export CFLAGS_AUX := -DPROCARM
